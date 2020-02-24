@@ -1,8 +1,10 @@
 (ns game-wiki-api.core
   (:require [io.pedestal.http :as http]
+            [io.pedestal.http.body-params :as body-params]
             [io.pedestal.http.route :as route]
             [io.pedestal.test :as test]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cheshire.core :as json]))
 
 ;;; api helpers
 (defn response [status body & {:as headers}]
@@ -93,10 +95,8 @@
   {:name :view-card
    :enter view-card-fn})
 
-; TODO use body not query params
 (defn create-card-fn [context]
-  (let [card-name (get-in context [:request :query-params :name])
-        card-data {:name card-name}
+  (let [card-data (get-in context [:request :json-params])
         db (get-in context [:request :database])]
     (if-let [new-card (make-card db card-data)]
       (if (validate-card new-card)
@@ -111,12 +111,22 @@
   {:name :make-card
    :enter create-card-fn})
 
+(defn echo-json-body-fn [context]
+  (let [request (:request context)
+        json (:json-params request)]
+    (assoc context :response (ok json))))
+
+(def echo-json-body
+  {:name :echo-json-body
+   :enter echo-json-body-fn})
+
 ;;; Routes
 (def routes
   (route/expand-routes
    #{["/cards" :get [db-interceptor list-cards]]
      ["/card/:card-id" :get [db-interceptor view-card]]
-     ["/cards" :post [db-interceptor create-card]]}))
+     ["/cards" :post [(body-params/body-params) db-interceptor create-card]]
+     ["/json" :post [(body-params/body-params) echo-json-body]]}))
 
 ;;; Service
 (def service-map
@@ -140,7 +150,16 @@
   (stop)
   (start))
 
+; Testing
 (defn test-request [verb url]
-  (io.pedestal.test/response-for (::http/service-fn @server) verb url))
+  (test/response-for (::http/service-fn @server) verb url))
 
-(test-request "post" "/cards?name=yoyo")
+(defn test-json-request [verb url body]
+  (test/response-for
+   (::http/service-fn @server)
+   verb
+   url
+   :headers {"Content-Type" "application/json"}
+   :body (json/encode body)))
+
+(test-json-request "post" "/json" {:hello "world"})
