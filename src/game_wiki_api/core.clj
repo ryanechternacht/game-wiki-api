@@ -16,7 +16,10 @@
 
 ;;; Domain functions
 
-; TODO validate card?
+(defn validate-card [card]
+  (let [id (:id card)
+        nm (:name card)]
+    (not (nil? (and id nm)))))
 
 (defn get-next-card-id [db]
   (inc
@@ -93,14 +96,16 @@
 ; TODO use body not query params
 ; TODO better return than (ok new-card)
 (defn create-card-fn [context]
-  (if-let [card-name (get-in context [:request :query-params :name] "New Card")]
-    (let [card-data {:name card-name}]
-      (if-let [db (get-in context [:request :database])]
-        (if-let [new-card (make-card db card-data)]
-          (let [new-id (:id new-card)]
-            (assoc context
-                   :response (ok new-card)
-                   :tx-data [assoc-in [:cards new-id] new-card])))))))
+  (let [card-name (get-in context [:request :query-params :name])
+        card-data {:name card-name}
+        db (get-in context [:request :database])]
+    (if-let [new-card (make-card db card-data)]
+      (if (validate-card new-card)
+        (let [new-id (:id new-card)]
+          (assoc context
+                  :response (ok new-card)
+                  :tx-data [assoc-in [:cards new-id] new-card]))
+        context))))
 
 (def create-card
   {:name :make-card
