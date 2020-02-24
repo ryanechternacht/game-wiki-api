@@ -11,8 +11,8 @@
 (def ok (partial response 200))
 (def created (partial response 201))
 (def accepted (partial response 202))
-; TODO add 4xx 5xx
-
+(def invalid (partial response 400))
+(def error (partial response 500))
 
 ;;; Domain functions
 
@@ -103,9 +103,9 @@
       (if (validate-card new-card)
         (let [new-id (:id new-card)]
           (assoc context
-                  :response (ok new-card)
-                  :tx-data [assoc-in [:cards new-id] new-card]))
-        context))))
+                 :response (ok new-card)
+                 :tx-data [assoc-in [:cards new-id] new-card]))
+        (assoc context :response (invalid {:error "Name not supplied"}))))))
 
 (def create-card
   {:name :make-card
