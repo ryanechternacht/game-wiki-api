@@ -16,11 +16,14 @@
 
 ;;; Domain functions
 
-; TODO get next card id
 ; TODO validate card?
 
-(defn make-card [card]
-  (assoc card :id 10))
+(defn get-next-card-id [db]
+  (inc
+   (reduce max (keys (:cards db)))))
+
+(defn make-card [db card]
+  (assoc card :id (get-next-card-id db)))
 
 ;;; Database functions
 (defonce database (atom {:cards {1 {:name "card 1" :id 1} 2 {:name "card 2" :id 2}}}))
@@ -88,14 +91,16 @@
    :enter view-card-fn})
 
 ; TODO use body not query params
+; TODO better return than (ok new-card)
 (defn create-card-fn [context]
   (if-let [card-name (get-in context [:request :query-params :name] "New Card")]
     (let [card-data {:name card-name}]
-      (if-let [new-card (make-card card-data)]
-        (let [new-id (:id new-card)]
-          (assoc context
-                 :response (ok new-card)
-                 :tx-data [assoc-in [:cards new-id] new-card]))))))
+      (if-let [db (get-in context [:request :database])]
+        (if-let [new-card (make-card db card-data)]
+          (let [new-id (:id new-card)]
+            (assoc context
+                   :response (ok new-card)
+                   :tx-data [assoc-in [:cards new-id] new-card])))))))
 
 (def create-card
   {:name :make-card
@@ -133,3 +138,4 @@
 (defn test-request [verb url]
   (io.pedestal.test/response-for (::http/service-fn @server) verb url))
 
+(test-request "post" "/cards?name=yoyo")
