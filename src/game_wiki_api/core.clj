@@ -94,16 +94,16 @@
    :enter view-card-fn})
 
 ; TODO use body not query params
-; TODO better return than (ok new-card)
 (defn create-card-fn [context]
   (let [card-name (get-in context [:request :query-params :name])
         card-data {:name card-name}
         db (get-in context [:request :database])]
     (if-let [new-card (make-card db card-data)]
       (if (validate-card new-card)
-        (let [new-id (:id new-card)]
+        (let [new-id (:id new-card)
+              url (route/url-for :view-card :params {:card-id new-id})]
           (assoc context
-                 :response (ok new-card)
+                 :response (created new-card "Location" url)
                  :tx-data [assoc-in [:cards new-id] new-card]))
         (assoc context :response (invalid {:error "Name not supplied"}))))))
 
