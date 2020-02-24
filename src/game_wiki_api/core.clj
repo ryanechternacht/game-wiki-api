@@ -13,21 +13,38 @@
 (def accepted (partial response 202))
 ; TODO add 4xx 5xx
 
+
+;;; Domain functions
+
+; TODO get next card id
+; TODO validate card?
+
+(defn make-card [card]
+  (assoc card :id 10))
+
 ;;; Database functions
 (defonce database (atom {:cards {1 {:name "card 1" :id 1} 2 {:name "card 2" :id 2}}}))
 
-(defn get-cards [db]
+(defn read-cards [db]
   (:cards db))
 
-(defn get-card-by-id [db id]
+(defn read-card-by-id [db id]
   (get-in db [:cards id]))
 
-(defn db-interceptor-enter [context]
+(defn attach-db-fn [context]
   (assoc-in context [:request :database] @database))
+
+(defn commit-transaction-fn [context]
+  (if-let [[op & args] (:tx-data context)]
+    (do
+      (apply swap! database op args)
+      (assoc-in context [:request :database] @database))
+    context))
 
 (def db-interceptor
   {:name :db-interceptor
-   :enter db-interceptor-enter})
+   :enter attach-db-fn
+   :leave commit-transaction-fn})
 
 ;;; API Interceptors
 (defn print-request-fn [context]
@@ -40,8 +57,7 @@
    :enter print-request-fn})
 
 (defn echo-fn [context]
-  (let [request (:request context)
-        response (ok context)]
+  (let [response (ok context)]
     (assoc context :response response)))
 
 (def echo
@@ -50,7 +66,7 @@
 
 (defn list-cards-fn [context]
   (let [db (get-in context [:request :database])
-        cards (get-cards db)
+        cards (read-cards db)
         response (ok cards)]
     (assoc context :response response)))
 
@@ -61,7 +77,7 @@
 (defn view-card-fn [context]
   (let [db (get-in context [:request :database])]
     (if-let [card-id (edn/read-string (get-in context [:request :path-params :card-id]))]
-      (if-let [the-card (get-card-by-id db card-id)]
+      (if-let [the-card (read-card-by-id db card-id)]
         (let [response (ok the-card)]
           (assoc context :response response))
         context)
@@ -71,11 +87,26 @@
   {:name :view-card
    :enter view-card-fn})
 
+; TODO use body not query params
+(defn create-card-fn [context]
+  (if-let [card-name (get-in context [:request :query-params :name] "New Card")]
+    (let [card-data {:name card-name}]
+      (if-let [new-card (make-card card-data)]
+        (let [new-id (:id new-card)]
+          (assoc context
+                 :response (ok new-card)
+                 :tx-data [assoc-in [:cards new-id] new-card]))))))
+
+(def create-card
+  {:name :make-card
+   :enter create-card-fn})
+
 ;;; Routes
 (def routes
   (route/expand-routes
    #{["/cards" :get [db-interceptor list-cards]]
-     ["/card/:card-id" :get [db-interceptor view-card]]}))
+     ["/card/:card-id" :get [db-interceptor view-card]]
+     ["/cards" :post [db-interceptor create-card]]}))
 
 ;;; Service
 (def service-map
@@ -101,3 +132,4 @@
 
 (defn test-request [verb url]
   (io.pedestal.test/response-for (::http/service-fn @server) verb url))
+
