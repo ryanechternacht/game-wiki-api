@@ -5,20 +5,10 @@
             [io.pedestal.test :as test]
             [clojure.edn :as edn]
             [cheshire.core :as json]
-            [game-wiki-api.data-base.in-memory-database :as db]))
-
-;;; api helpers
-(defn response [status body & {:as headers}]
-  {:status status :body body :headers headers})
-
-(def ok (partial response 200))
-(def created (partial response 201))
-(def accepted (partial response 202))
-(def invalid (partial response 400))
-(def error (partial response 500))
+            [game-wiki-api.data-base.in-memory-database :as db]
+            [game-wiki-api.http-responses :as resp]))
 
 ;;; Domain functions
-
 (defn validate-card [card]
   (let [id (:id card)
         nm (:name card)]
@@ -42,7 +32,7 @@
    :enter print-request-fn})
 
 (defn echo-fn [context]
-  (let [response (ok context)]
+  (let [response (resp/ok context)]
     (assoc context :response response)))
 
 (def echo
@@ -52,7 +42,7 @@
 (defn list-cards-fn [context]
   (let [db (get-in context [:request :database])
         cards (db/read-cards db)
-        response (ok cards)]
+        response (resp/ok cards)]
     (assoc context :response response)))
 
 (def list-cards
@@ -63,7 +53,7 @@
   (let [db (get-in context [:request :database])]
     (if-let [card-id (edn/read-string (get-in context [:request :path-params :card-id]))]
       (if-let [the-card (db/read-card-by-id db card-id)]
-        (let [response (ok the-card)]
+        (let [response (resp/ok the-card)]
           (assoc context :response response))
         context)
       context)))
@@ -80,9 +70,9 @@
         (let [new-id (:id new-card)
               url (route/url-for :view-card :params {:card-id new-id})]
           (assoc context
-                 :response (created new-card "Location" url)
+                 :response (resp/created new-card "Location" url)
                  :tx-data [assoc-in [:cards new-id] new-card]))
-        (assoc context :response (invalid {:error "Name not supplied"}))))))
+        (assoc context :response (resp/invalid {:error "Name not supplied"}))))))
 
 (def create-card
   {:name :make-card
@@ -91,7 +81,7 @@
 (defn echo-json-body-fn [context]
   (let [request (:request context)
         json (:json-params request)]
-    (assoc context :response (ok json))))
+    (assoc context :response (resp/ok json))))
 
 (def echo-json-body
   {:name :echo-json-body
@@ -128,7 +118,6 @@
   (start))
 
 ; Testing
-;; (start)
 
 (defn test-request [verb url]
   (test/response-for (::http/service-fn @server) verb url))
@@ -141,4 +130,4 @@
    :headers {"Content-Type" "application/json"}
    :body (json/encode body)))
 
-(test-json-request "post" "/cards" {:name "hello world"})
+;; (test-json-request "post" "/cards" {:name "hello world"})

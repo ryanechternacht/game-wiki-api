@@ -2,6 +2,9 @@
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]))
 
+;; TODO this should somehow be rewritten to allow us to inject
+;; the databsae as we go
+
 (def initial-data-file "./resources/initial_data.edn")
 
 (defn load-edn
