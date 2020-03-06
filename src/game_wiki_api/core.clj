@@ -4,7 +4,8 @@
             [io.pedestal.http.route :as route]
             [io.pedestal.test :as test]
             [clojure.edn :as edn]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [game-wiki-api.data-base.in-memory-database :as db]))
 
 ;;; api helpers
 (defn response [status body & {:as headers}]
@@ -30,30 +31,6 @@
 (defn make-card [db card]
   (assoc card :id (get-next-card-id db)))
 
-;;; Database functions
-(defonce database (atom {:cards {1 {:name "card 1" :id 1} 2 {:name "card 2" :id 2}}}))
-
-(defn read-cards [db]
-  (:cards db))
-
-(defn read-card-by-id [db id]
-  (get-in db [:cards id]))
-
-(defn attach-db-fn [context]
-  (assoc-in context [:request :database] @database))
-
-(defn commit-transaction-fn [context]
-  (if-let [[op & args] (:tx-data context)]
-    (do
-      (apply swap! database op args)
-      (assoc-in context [:request :database] @database))
-    context))
-
-(def db-interceptor
-  {:name :db-interceptor
-   :enter attach-db-fn
-   :leave commit-transaction-fn})
-
 ;;; API Interceptors
 (defn print-request-fn [context]
   (let [request (:request context)]
@@ -74,7 +51,7 @@
 
 (defn list-cards-fn [context]
   (let [db (get-in context [:request :database])
-        cards (read-cards db)
+        cards (db/read-cards db)
         response (ok cards)]
     (assoc context :response response)))
 
@@ -85,7 +62,7 @@
 (defn view-card-fn [context]
   (let [db (get-in context [:request :database])]
     (if-let [card-id (edn/read-string (get-in context [:request :path-params :card-id]))]
-      (if-let [the-card (read-card-by-id db card-id)]
+      (if-let [the-card (db/read-card-by-id db card-id)]
         (let [response (ok the-card)]
           (assoc context :response response))
         context)
@@ -123,9 +100,9 @@
 ;;; Routes
 (def routes
   (route/expand-routes
-   #{["/cards" :get [db-interceptor list-cards]]
-     ["/card/:card-id" :get [db-interceptor view-card]]
-     ["/cards" :post [(body-params/body-params) db-interceptor create-card]]
+   #{["/cards" :get [db/db-interceptor list-cards]]
+     ["/card/:card-id" :get [db/db-interceptor view-card]]
+     ["/cards" :post [(body-params/body-params) db/db-interceptor create-card]]
      ["/json" :post [(body-params/body-params) echo-json-body]]}))
 
 ;;; Service
@@ -151,6 +128,8 @@
   (start))
 
 ; Testing
+;; (start)
+
 (defn test-request [verb url]
   (test/response-for (::http/service-fn @server) verb url))
 
@@ -162,4 +141,4 @@
    :headers {"Content-Type" "application/json"}
    :body (json/encode body)))
 
-(test-json-request "post" "/json" {:hello "world"})
+(test-json-request "post" "/cards" {:name "hello world"})
