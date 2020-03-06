@@ -8,3 +8,10 @@ This project uses:
 - clojure
 - pedestal api library
 - a lot of blood, sweat, and tears
+
+TODOs
+- breakup the codebase into modules
+- write some tests
+- implement an sql based database backing
+- implement a datomic
+- write specs
