@@ -1,4 +1,4 @@
-(ns game-wiki-api.data-base.in-memory-database
+(ns game-wiki-api.database.in-memory-database
   (:require [clojure.java.io :as io]
             [clojure.edn :as edn]))
 

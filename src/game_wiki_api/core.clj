@@ -5,21 +5,9 @@
             [io.pedestal.test :as test]
             [clojure.edn :as edn]
             [cheshire.core :as json]
-            [game-wiki-api.data-base.in-memory-database :as db]
-            [game-wiki-api.http-responses :as resp]))
-
-;;; Domain functions
-(defn validate-card [card]
-  (let [id (:id card)
-        nm (:name card)]
-    (not (nil? (and id nm)))))
-
-(defn get-next-card-id [db]
-  (inc
-   (reduce max (keys (:cards db)))))
-
-(defn make-card [db card]
-  (assoc card :id (get-next-card-id db)))
+            [game-wiki-api.database.in-memory-database :as db]
+            [game-wiki-api.http-responses :as resp]
+            [game-wiki-api.domain :as domain]))
 
 ;;; API Interceptors
 (defn print-request-fn [context]
@@ -65,8 +53,8 @@
 (defn create-card-fn [context]
   (let [card-data (get-in context [:request :json-params])
         db (get-in context [:request :database])]
-    (if-let [new-card (make-card db card-data)]
-      (if (validate-card new-card)
+    (if-let [new-card (domain/make-card db card-data)]
+      (if (domain/validate-card new-card)
         (let [new-id (:id new-card)
               url (route/url-for :view-card :params {:card-id new-id})]
           (assoc context
