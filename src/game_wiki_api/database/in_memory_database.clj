@@ -22,17 +22,3 @@
 (defn read-card-by-id [db id]
   (get-in db [:cards id]))
 
-(defn attach-db-fn [context]
-  (assoc-in context [:request :database] @database))
-
-(defn commit-transaction-fn [context]
-  (if-let [[op & args] (:tx-data context)]
-    (do
-      (apply swap! database op args)
-      (assoc-in context [:request :database] @database))
-    context))
-
-(def db-interceptor
-  {:name :db-interceptor
-   :enter attach-db-fn
-   :leave commit-transaction-fn})
