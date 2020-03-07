@@ -42,8 +42,6 @@
   (let [db (get-in context [:request :database])
         cards (db/read-cards db)
         response (resp/ok cards)]
-    (prn db)
-    (prn cards)
     (assoc context :response response)))
 
 (def list-cards
