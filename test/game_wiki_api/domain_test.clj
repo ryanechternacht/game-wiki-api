@@ -11,17 +11,6 @@
       (is (not (validate-card {:id 1})) "missing name")
       (is (not (validate-card {:name "hello"})) "missing id"))))
 
-(deftest get-next-card-id-test
-  (testing "Get Next Card ID Test"
-    (testing "simple case"
-      (is (= 2 (get-next-card-id {:cards {1 {}}}))))
-    (testing "advanced case"
-      (is (= 4 (get-next-card-id {:cards {1 {} 2 {} 3 {}}}))))
-    (testing "missing ids"
-      (is (= 11 (get-next-card-id {:cards {10 {}}}))))
-    (testing "empty throws error"
-      (is (thrown? Exception (get-next-card-id {}))))))
-
 ;; relies on get-next-card-id-test
 (deftest make-card-test
   (testing "Make card"

@@ -15,22 +15,31 @@
 
 (defn read-cards [db]
   (fn []
-    (:cards @db)))
+    (:cards db)))
 
 (defn read-card-by-id [db]
   (fn [id]
-    (get-in @db [:cards id])))
+    (get-in db [:cards id])))
 
-(defn save-card [db]
+(defn get-next-card-id [db-val]
+  (inc
+   (reduce max (keys (:cards db-val)))))
+
+(defn save-card! [db]
   (fn [card]
     (do
-      (swap! db assoc-in [:cards (:id card)] card))))
+      (swap! db (fn [db-val]
+                  (do
+                    (let [c (if (:id card)
+                              card
+                              (assoc card :id (get-next-card-id db-val)))]
+                      (assoc-in db-val [:cards (:id c)] c))))))))
 
 (defn get-db-map
   "Takes an atom representing an in memory database. 
    If none is supplied uses the default db atom"
   ([] (get-db-map database))
   ([db]
-   {:read-cards (read-cards db)
-    :read-card-by-id (read-card-by-id db)
-    :save-card (save-card db)}))
+   {:read-cards (read-cards @db)
+    :read-card-by-id (read-card-by-id @db)
+    :save-card! (save-card! db)}))
