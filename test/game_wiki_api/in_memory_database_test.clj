@@ -53,17 +53,3 @@
             (save-card! card)
             (is (= pre-cards-count (count (:cards @db))) "Card count wasn't changed")
             (is (= new-name (get-in @db [:cards 1 :name])) "Card name was changed")))))))
-
-;; (def funcs (get-db-map database))
-
-;; (def save-card-fn! (:save-card! funcs))
-
-;; (save-card-fn! {:name "hello"})
-
-;; (def get-cards-fn (:read-cards funcs))
-
-;; (get-cards-fn)
-
-;; (apply swap! database assoc-in [[:cards 3] {:id 3 :name "hello"}])
-
-;; (assoc-in @database [:cards 4] {:id 4 :name "hello2"})

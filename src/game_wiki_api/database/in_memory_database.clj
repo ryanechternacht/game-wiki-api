@@ -15,11 +15,11 @@
 
 (defn read-cards [db]
   (fn []
-    (:cards db)))
+    (:cards @db)))
 
 (defn read-card-by-id [db]
   (fn [id]
-    (get-in db [:cards id])))
+    (get-in @db [:cards id])))
 
 (defn get-next-card-id [db-val]
   (inc
@@ -40,6 +40,6 @@
    If none is supplied uses the default db atom"
   ([] (get-db-map database))
   ([db]
-   {:read-cards (read-cards @db)
-    :read-card-by-id (read-card-by-id @db)
+   {:read-cards (read-cards db)
+    :read-card-by-id (read-card-by-id db)
     :save-card! (save-card! db)}))

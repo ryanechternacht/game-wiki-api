@@ -8,4 +8,4 @@
       (let [card {:name "name"}]
         (is (validate-new-card card))))
     (testing "invalid cards"
-      (is (not (validate-new-card {:other "other"})) "missing name")
+      (is (not (validate-new-card {:other "other"})) "missing name"))))

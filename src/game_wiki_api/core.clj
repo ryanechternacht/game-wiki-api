@@ -47,5 +47,3 @@
    url
    :headers {"Content-Type" "application/json"}
    :body (json/encode body)))
-
-;; (test-json-request "post" "/cards" {:name "hello world"})

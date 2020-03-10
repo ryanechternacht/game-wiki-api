@@ -14,14 +14,14 @@
   {:name :db-interceptor
    :enter attach-db-fn})
 
-;; (defn print-request-fn [context]
-;;   (let [request (:request context)]
-;;     (print request)
-;;     request))
+(defn print-request-fn [context]
+  (let [request (:request context)]
+    (print request)
+    request))
 
-;; (def print-request
-;;   {:name :print-request
-;;    :enter print-request-fn})
+(def print-request
+  {:name :print-request
+   :enter print-request-fn})
 
 (defn echo-fn [context]
   (let [response (resp/ok context)]
