@@ -1,6 +1,7 @@
 (ns game-wiki-api.api-interceptors-test
   (:require [clojure.test :refer :all]
-            [game-wiki-api.api-interceptors :refer :all]))
+            [game-wiki-api.api-interceptors :refer :all]
+            [io.pedestal.http.route :as route]))
 
 (deftest attach-db-fn-test
   (testing "Attach Db Function Test"
@@ -8,16 +9,6 @@
           after-context (attach-db-fn {:other other-val})]
       (is (get-in after-context [:request :database]) "database attached")
       (is (= (:other after-context) other-val) "other value preserved"))))
-
-;; Can't test this until we inject the db
-;; (deftest commit-transaction-fn-test
-;;   (testing "Commit Transaction Function Test"
-;;     (let [other-val "other val"
-;;           test-val "test val"
-;;           db {:other other-val}
-;;           before-context {:tx-data [assoc :test test-val]}
-;;           after-contxt (commit-transaction-fn before-context)]
-;;       (is ()))))
 
 (deftest echo-fn-test
   (testing "Echo Function Test"
@@ -29,7 +20,8 @@
 (deftest list-cards-fn-test
   (testing "List Cards Function Test"
     (let [cards [1 2 3]
-          before-context {:request {:database {:cards cards}} :other-val "other-val"}
+          db-map {:read-cards (fn [] cards)}
+          before-context {:request {:database db-map} :other-val "other-val"}
           after-context (list-cards-fn before-context)]
       (is (= cards (get-in after-context [:response :body])) "cards is body")
       (is (= (:other-val before-context) (:other-val after-context)) "context is preserved"))))
@@ -38,27 +30,27 @@
   (testing "View Card Function Test"
     (let [card-id 1234
           card {:name "hello, world" :id card-id}
-          before-context {:request {:database {:cards {card-id card}}
+          db-map {:read-card-by-id (fn [i] card)}
+          before-context {:request {:database db-map
                                     :path-params {:card-id (str card-id)}}
                           :other "other-val"}
           after-context (view-card-fn before-context)]
       (is (= card (get-in after-context [:response :body])) "card is returned as body")
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
 
-; relying on underlying game-wiki-api.domain/make-card
-; and url/for
-;; (deftest create-card-fn-test
-;;   (testing "Create Card Function Test"
-;;     (let [card-data {:name "hello, world"}
-;;           before-context {:other "other-val"
-;;                           :request {:json-params card-data
-;;                                     :database {:cards {1 {:id 1}}}}}
-;;           after-context (create-card-fn before-context)
-;;           tx-data (:tx-data after-context)]
-;;       (is tx-data "tx-data was attached")
-;;       (is (= (get 0 tx-data) assoc-in) "first element is assoc-in")
-;;       (is (= (get-in [2 :name] tx-data) (:name card-data)) "new cards has name")
-;;       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+
+;; requires rebinding io.pedestal.http.route/*url-for*
+(deftest create-card-fn-test
+  (testing "Create Card Function Test"
+    (binding [route/*url-for* (fn [a b c] "")]
+      (let [card-data {:name "hello, world"}
+            db-map {:save-card! (fn [card] (assoc card :id 1))}
+            before-context {:other "other-val"
+                            :request {:json-params card-data
+                                      :database db-map}}
+            after-context (create-card-fn before-context)]
+        (is (= (:other before-context) (:other after-context)) "context is preserved")
+        (is (= (:name card-data) (get-in after-context [:response :body :name])) "body has the new card")))))
 
 (deftest echo-json-body-test
   (testing "Echo Json Body Function Test"

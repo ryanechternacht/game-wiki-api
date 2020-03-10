@@ -2,10 +2,6 @@
 
 ;; This probably needs a better name
 
-(defn validate-card [card]
-  (let [id (:id card)
-        nm (:name card)]
-    (not (nil? (and id nm)))))
-
-(defn make-card [db card]
-  (assoc card :id (get-next-card-id db)))
+(defn validate-new-card [card]
+  (let [nm (:name card)]
+    (not (nil? nm)))) ;; i add more things here eventually
