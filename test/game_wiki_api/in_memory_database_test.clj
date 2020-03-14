@@ -11,7 +11,7 @@
       (is read-cards "read-cards is defined")
       (let [cards (read-cards)]
         (is (= 2 (count cards)) "Has correct key count")
-        (is (= "card 1" (get-in cards [1 :name])) "Card 1 has the correct name")))))
+        (is (= "card 1" (:name (first cards))) "Card 1 has the correct name")))))
 
 (deftest read-card-by-id-test
   (testing "Read Card By ID Test"

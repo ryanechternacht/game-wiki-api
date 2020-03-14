@@ -15,7 +15,7 @@
 
 (defn read-cards [db]
   (fn []
-    (:cards @db)))
+    (vals (:cards @db))))
 
 (defn read-card-by-id [db]
   (fn [id]
