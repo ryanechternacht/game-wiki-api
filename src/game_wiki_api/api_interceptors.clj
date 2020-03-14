@@ -14,6 +14,7 @@
   {:name :db-interceptor
    :enter attach-db-fn})
 
+;; testing interceptors
 (defn print-request-fn [context]
   (let [request (:request context)]
     (print request)
@@ -31,6 +32,16 @@
   {:name :echo
    :enter echo-fn})
 
+(defn echo-json-body-fn [context]
+  (let [request (:request context)
+        json (:json-params request)]
+    (assoc context :response (resp/ok json))))
+
+(def echo-json-body
+  {:name :echo-json-body
+   :enter echo-json-body-fn})
+
+;; card interceptors
 (defn list-cards-fn [context]
   (let [read-cards (get-in context [:request :database :read-cards])
         cards (read-cards)
@@ -68,6 +79,7 @@
   {:name :create-card
    :enter create-card-fn})
 
+;; faq interceptor
 (defn view-faq-fn [context]
   (let [read-faq-by-id (get-in context [:request :database :read-faq-by-id])]
     (if-let [faq-id (edn/read-string (get-in context [:request :path-params :faq-id]))]
@@ -78,11 +90,3 @@
   {:name :view-faq
    :enter view-faq-fn})
 
-(defn echo-json-body-fn [context]
-  (let [request (:request context)
-        json (:json-params request)]
-    (assoc context :response (resp/ok json))))
-
-(def echo-json-body
-  {:name :echo-json-body
-   :enter echo-json-body-fn})

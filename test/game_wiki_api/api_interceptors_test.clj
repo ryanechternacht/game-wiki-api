@@ -10,6 +10,7 @@
       (is (get-in after-context [:request :database]) "database attached")
       (is (= (:other after-context) other-val) "other value preserved"))))
 
+;; testing interceptors
 (deftest echo-fn-test
   (testing "Echo Function Test"
     (let [before-context {:test "test-val"}
@@ -17,6 +18,15 @@
       (is (= before-context (get-in after-context [:response :body])) "echo context as response")
       (is (= (:test before-context) (:test after-context)) "context preserved"))))
 
+(deftest echo-json-body-test
+  (testing "Echo Json Body Function Test"
+    (let [before-context {:other "other-val"
+                          :request {:json-params {:param-1 1 :param-2 2 :param-c "c"}}}
+          after-context (echo-json-body-fn before-context)]
+      (is (= (get-in [:request :json-params] before-context) (get-in [:response :body] after-context)) "json was returned as body")
+      (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+
+;; card interceptors
 (deftest list-cards-fn-test
   (testing "List Cards Function Test"
     (let [cards [1 2 3]
@@ -38,8 +48,7 @@
       (is (= card (get-in after-context [:response :body])) "card is returned as body")
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
 
-
-;; requires rebinding io.pedestal.http.route/*url-for*
+; requires rebinding io.pedestal.http.route/*url-for*
 (deftest create-card-fn-test
   (testing "Create Card Function Test"
     (binding [route/*url-for* (fn [a b c] "")]
@@ -52,10 +61,15 @@
         (is (= (:other before-context) (:other after-context)) "context is preserved")
         (is (= (:name card-data) (get-in after-context [:response :body :name])) "body has the new card")))))
 
-(deftest echo-json-body-test
-  (testing "Echo Json Body Function Test"
-    (let [before-context {:other "other-val"
-                          :request {:json-params {:param-1 1 :param-2 2 :param-c "c"}}}
-          after-context (echo-json-body-fn before-context)]
-      (is (= (get-in [:request :json-params] before-context) (get-in [:response :body] after-context)) "json was returned as body")
+;; faq interceptors
+(deftest view-faq-fn-test
+  (testing "View Faq Function Test"
+    (let [faq-id 1234
+          faq {:name "hello, world" :id faq-id}
+          db-map {:read-faq-by-id (fn [i] faq)}
+          before-context {:request {:database db-map
+                                    :path-params {:faq-id (str faq-id)}}
+                          :other "other-val"}
+          after-context (view-faq-fn before-context)]
+      (is (= faq (get-in after-context [:response :body] "faq is returned as body")))
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
