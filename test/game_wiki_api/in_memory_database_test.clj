@@ -75,3 +75,16 @@
         (is (= (count (:faqs db-val)) (count faqs)) "correct count was returned")
         (is (and (:id faq1) (:title faq1)) "title and id are returned")
         (is (and (nil? (:body faq1)) (nil? (:tags faq1))) "body and tags aren't returned")))))
+
+(deftest search-faqs-test
+  (testing "Search Faqs Test"
+    (let [db-val {:faqs {1 {:id 1 :title "hello"} 2 {:id 2 :body "world"} 3 {:id 3 :tags ["goodbye"]}}}
+          search-faqs (:search-faqs (get-db-map (atom db-val)))]
+      (is search-faqs "search-faqs is defined")
+      (let [faqs (search-faqs "hello")
+            faq1 (first faqs)]
+        (is (= 1 (count faqs)) "title searching is correct")
+        (is (and (:id faq1) (:title faq1)) "id and title are returned")
+        (is (and (nil? (:body faq1)) (nil? (:tags faq1)) "body and tags aren't returned")))
+      (is (= 1 (count (search-faqs "world"))) "search by body works")
+      (is (= 1 (count (search-faqs "goodbye"))) "search by tags works"))))

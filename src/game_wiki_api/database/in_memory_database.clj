@@ -1,6 +1,7 @@
 (ns game-wiki-api.database.in-memory-database
   (:require [clojure.java.io :as io]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.string :as str]))
 
 (def initial-data-file "./resources/initial_data.edn")
 
@@ -13,6 +14,7 @@
 
 (defonce database (atom (load-edn initial-data-file)))
 
+;; cards calls
 (defn read-cards [db]
   (fn []
     (vals (:cards @db))))
@@ -35,6 +37,7 @@
                               (assoc card :id (get-next-card-id db-val)))]
                       (assoc-in db-val [:cards (:id c)] c))))))))
 
+;; faq calls
 (defn read-faq-by-id [db]
   (fn [id]
     (get-in @db [:faqs id])))
@@ -42,6 +45,16 @@
 (defn read-faqs-simple [db]
   (fn []
     (map #(select-keys % [:title :id]) (vals (:faqs @db)))))
+
+;; add in tags searching
+(defn search-faqs [db]
+  (fn [query]
+    (->> (:faqs @db)
+         vals
+         (filter #(or (str/includes? (:title % "") query)
+                      (str/includes? (:body % "") query)
+                      (some (fn [t] (str/includes? t query)) (:tags % []))))
+         (map #(select-keys % [:title :id])))))
 
 (defn get-db-map
   "Takes an atom representing an in memory database. 
@@ -52,4 +65,5 @@
     :read-card-by-id (read-card-by-id db)
     :save-card! (save-card! db)
     :read-faqs-simple (read-faqs-simple db)
-    :read-faq-by-id (read-faq-by-id db)}))
+    :read-faq-by-id (read-faq-by-id db)
+    :search-faqs (search-faqs db)}))
