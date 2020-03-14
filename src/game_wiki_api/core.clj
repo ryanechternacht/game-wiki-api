@@ -12,7 +12,8 @@
    #{["/cards" :get [api/db-interceptor api/list-cards]]
      ["/card/:card-id" :get [api/db-interceptor api/view-card]]
      ["/cards" :post [(body-params/body-params) api/db-interceptor api/create-card]]
-     ["/json" :post [(body-params/body-params) api/echo-json-body]]}))
+     ["/json" :post [(body-params/body-params) api/echo-json-body]]
+     ["/faq/:faq-id" :get [api/db-interceptor api/view-faq]]}))
 
 ;;; Service
 (def service-map

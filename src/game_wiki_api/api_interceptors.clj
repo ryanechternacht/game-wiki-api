@@ -68,6 +68,16 @@
   {:name :create-card
    :enter create-card-fn})
 
+(defn view-faq-fn [context]
+  (let [read-faq-by-id (get-in context [:request :database :read-faq-by-id])]
+    (if-let [faq-id (edn/read-string (get-in context [:request :path-params :faq-id]))]
+      (if-let [the-faq (read-faq-by-id faq-id)]
+        (assoc context :response (resp/ok the-faq))))))
+
+(def view-faq
+  {:name :view-faq
+   :enter view-faq-fn})
+
 (defn echo-json-body-fn [context]
   (let [request (:request context)
         json (:json-params request)]

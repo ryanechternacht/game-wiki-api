@@ -35,6 +35,10 @@
                               (assoc card :id (get-next-card-id db-val)))]
                       (assoc-in db-val [:cards (:id c)] c))))))))
 
+(defn read-faq-by-id [db]
+  (fn [id]
+    (get-in @db [:faqs id])))
+
 (defn get-db-map
   "Takes an atom representing an in memory database. 
    If none is supplied uses the default db atom"
@@ -42,4 +46,5 @@
   ([db]
    {:read-cards (read-cards db)
     :read-card-by-id (read-card-by-id db)
-    :save-card! (save-card! db)}))
+    :save-card! (save-card! db)
+    :read-faq-by-id (read-faq-by-id db)}))
