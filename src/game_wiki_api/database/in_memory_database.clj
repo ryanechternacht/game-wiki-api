@@ -39,6 +39,10 @@
   (fn [id]
     (get-in @db [:faqs id])))
 
+(defn read-faqs-simple [db]
+  (fn []
+    (map #(select-keys % [:title :id]) (vals (:faqs @db)))))
+
 (defn get-db-map
   "Takes an atom representing an in memory database. 
    If none is supplied uses the default db atom"
@@ -47,4 +51,5 @@
    {:read-cards (read-cards db)
     :read-card-by-id (read-card-by-id db)
     :save-card! (save-card! db)
+    :read-faqs-simple (read-faqs-simple db)
     :read-faq-by-id (read-faq-by-id db)}))

@@ -90,3 +90,10 @@
   {:name :view-faq
    :enter view-faq-fn})
 
+(defn list-faqs-simple-fn [context]
+  (let [read-faqs-simple (get-in context [:request :database :read-faqs-simple])]
+    (assoc context :response (resp/ok (read-faqs-simple)))))
+
+(def list-faqs-simple
+  {:name :list-faqs-simple
+   :enter list-faqs-simple-fn})

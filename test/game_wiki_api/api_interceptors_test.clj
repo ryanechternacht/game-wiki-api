@@ -73,3 +73,13 @@
           after-context (view-faq-fn before-context)]
       (is (= faq (get-in after-context [:response :body] "faq is returned as body")))
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+
+(deftest list-faqs-simple-test
+  (testing "View Faqs Simple Test"
+    (let [faqs {1 {} 2 {} 3 {}}
+          db-map {:read-faqs-simple (fn [] faqs)}
+          before-context {:request {:database db-map}
+                          :other "other-val"}
+          after-context (list-faqs-simple-fn before-context)]
+      (is (= faqs (get-in after-context [:response :body])) "faqs are returned as body")
+      (is (= (:other before-context) (:other after-context)) "context is preserved"))))

@@ -13,6 +13,7 @@
      ["/card/:card-id" :get [api/db-interceptor api/view-card]]
      ["/cards" :post [(body-params/body-params) api/db-interceptor api/create-card]]
      ["/json" :post [(body-params/body-params) api/echo-json-body]]
+     ["/faqs" :get [api/db-interceptor api/list-faqs-simple]]
      ["/faq/:faq-id" :get [api/db-interceptor api/view-faq]]}))
 
 ;;; Service
