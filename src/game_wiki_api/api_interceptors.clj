@@ -97,3 +97,12 @@
 (def list-faqs-simple
   {:name :list-faqs-simple
    :enter list-faqs-simple-fn})
+
+(defn search-faqs-fn [context]
+  (let [search-faqs (get-in context [:request :database :search-faqs])
+        search-query (get-in context [:request :path-params :faq-search])]
+    (assoc context :response (resp/ok (search-faqs search-query)))))
+
+(def search-faqs
+  {:name :search-faqs
+   :enter search-faqs-fn})

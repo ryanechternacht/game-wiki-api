@@ -83,3 +83,15 @@
           after-context (list-faqs-simple-fn before-context)]
       (is (= faqs (get-in after-context [:response :body])) "faqs are returned as body")
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+
+(deftest search-faqs-test
+  (testing "Search Faqs Test"
+    (let [faqs {1 {} 2 {} 3 {}}
+          search-param "search"
+          db-map {:search-faqs (fn [i] (if (= i search-param) faqs nil))}
+          before-context {:request {:database db-map
+                                    :path-params {:faq-search "search"}}
+                          :other "other"}
+          after-context (search-faqs-fn before-context)]
+      (is (= faqs (get-in after-context [:response :body] "faqs are returned")))
+      (is (= (:other before-context) (:other after-context)) "context is preserved"))))
