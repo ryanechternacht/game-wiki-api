@@ -40,13 +40,21 @@
   (testing "View Card Function Test"
     (let [card-id 1234
           card {:name "hello, world" :id card-id}
-          db-map {:read-card-by-id (fn [i] card)}
-          before-context {:request {:database db-map
-                                    :path-params {:card-id (str card-id)}}
-                          :other "other-val"}
-          after-context (view-card-fn before-context)]
-      (is (= card (get-in after-context [:response :body])) "card is returned as body")
-      (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+          db-map {:read-card-by-id (fn [i] (if (= i card-id) card nil))}]
+      (testing "Card Found"
+        (let [before-context {:request {:database db-map
+                                        :path-params {:card-id (str card-id)}}
+                              :other "other-val"}
+              after-context (view-card-fn before-context)]
+          (is (= card (get-in after-context [:response :body])) "card is returned as body")
+          (is (= (:other before-context) (:other after-context)) "context is preserved")))
+      (testing "Card Not Found"
+        (let [before-context {:request {:database db-map
+                                        :path-params {:card-id (str (inc card-id))}}
+                              :other "other-val"}
+              after-context (view-card-fn before-context)]
+          (is (= nil (get-in after-context [:response :body])) "not body si returned")
+          (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
 
 ; requires rebinding io.pedestal.http.route/*url-for*
 (deftest create-card-fn-test
@@ -66,13 +74,21 @@
   (testing "View Faq Function Test"
     (let [faq-id 1234
           faq {:name "hello, world" :id faq-id}
-          db-map {:read-faq-by-id (fn [i] faq)}
-          before-context {:request {:database db-map
-                                    :path-params {:faq-id (str faq-id)}}
-                          :other "other-val"}
-          after-context (view-faq-fn before-context)]
-      (is (= faq (get-in after-context [:response :body] "faq is returned as body")))
-      (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+          db-map {:read-faq-by-id (fn [i] (if (= i faq-id) faq nil))}]
+      (testing "Faq Found"
+        (let [before-context {:request {:database db-map
+                                        :path-params {:faq-id (str faq-id)}}
+                              :other "other-val"}
+              after-context (view-faq-fn before-context)]
+          (is (= faq (get-in after-context [:response :body] "faq is returned as body")))
+          (is (= (:other before-context) (:other after-context)) "context is preserved")))
+      (testing "Faq Not Found"
+        (let [before-context {:request {:database db-map
+                                        :path-params {:faq-id (str (inc faq-id))}}
+                              :other "other-val"}
+              after-context (view-faq-fn before-context)]
+          (is (= nil (get-in after-context [:response :body])) "no body is returned")
+          (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
 
 (deftest list-faqs-simple-test
   (testing "View Faqs Simple Test"

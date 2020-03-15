@@ -19,8 +19,12 @@
           funcs (get-db-map (atom db-val))
           read-card-by-id (:read-card-by-id funcs)]
       (is read-card-by-id "read-card-by-id is defined")
-      (let [card (read-card-by-id 1)]
-        (is (= "card 1" (:name card)) "Card has the correct name")))))
+      (testing "Card Found"
+        (let [card (read-card-by-id 1)]
+          (is (= "card 1" (:name card)) "Card has the correct name")))
+      (testing "Card Not Found"
+        (let [no-card (read-card-by-id 3)]
+          (is (= nil no-card) "no card returns nil"))))))
 
 (deftest get-next-card-id-test
   (testing "Get Next Card ID Test"
@@ -63,7 +67,10 @@
           db-val {:faqs {1 {:id 1 :title ""} faq-id faq}}
           read-faq-by-id (:read-faq-by-id (get-db-map (atom db-val)))]
       (is read-faq-by-id "read-faq-by-id is defined")
-      (is faq (read-faq-by-id faq-id)))))
+      (testing "Card Found"
+        (is (= faq (read-faq-by-id faq-id)) "faq is properly returned"))
+      (testing "Card Not Found"
+        (is (= nil (read-faq-by-id 3)) "nil is returned when faq is not found")))))
 
 (deftest read-faqs-simple-test
   (testing "Read Faqs Simple Test"

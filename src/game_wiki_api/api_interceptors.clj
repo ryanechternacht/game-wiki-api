@@ -84,7 +84,9 @@
   (let [read-faq-by-id (get-in context [:request :database :read-faq-by-id])]
     (if-let [faq-id (edn/read-string (get-in context [:request :path-params :faq-id]))]
       (if-let [the-faq (read-faq-by-id faq-id)]
-        (assoc context :response (resp/ok the-faq))))))
+        (assoc context :response (resp/ok the-faq))
+        context)
+      context)))
 
 (def view-faq
   {:name :view-faq
