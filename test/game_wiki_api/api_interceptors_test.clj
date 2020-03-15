@@ -111,3 +111,13 @@
           after-context (search-faqs-fn before-context)]
       (is (= faqs (get-in after-context [:response :body] "faqs are returned")))
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+
+(deftest list-popular-faq-tags-test
+  (testing "List Popular Faq Tags Test"
+    (let [tags '("hello" "world")
+          db-map {:get-popular-faq-tags (fn [] (prn "hello") tags)}
+          before-context {:request {:database db-map}
+                          :other "other"}
+          after-context (list-popular-faq-tags-fn before-context)]
+      (is (= tags (get-in after-context [:response :body])) "tags are returned")
+      (is (= (:other before-context) (:other after-context)) "context is preserved"))))

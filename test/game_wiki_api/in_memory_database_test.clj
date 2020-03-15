@@ -95,3 +95,16 @@
         (is (and (nil? (:body faq1)) (nil? (:tags faq1)) "body and tags aren't returned")))
       (is (= 1 (count (search-faqs "world"))) "search by body works")
       (is (= 1 (count (search-faqs "goodbye"))) "search by tags works"))))
+
+(deftest get-popular-faq-tags-test
+  (testing "Get Popular Faqs Tags Test"
+    (let [db-val {:faqs {1 {:tags [1 2 3 4 5]}
+                         2 {:tags [1 2 3 4 5]}
+                         3 {:tags [1 2 3 4 5]}
+                         4 {:tags [1 6]}}}
+          get-popular-faq-tags (:get-popular-faq-tags (get-db-map (atom db-val)))]
+      (is get-popular-faq-tags "get-popular-faq-tags is defined")
+      (let [tags (get-popular-faq-tags)]
+        (is (<= 4 (count tags)) "no more than 4 results are returned")
+        (is (some #(= 1 %) tags) "contains 1, the key with the most")
+        (is (every? #(not= 6 %) tags) "doesn't contain 6, the key with the least")))))

@@ -108,3 +108,11 @@
 (def search-faqs
   {:name :search-faqs
    :enter search-faqs-fn})
+
+(defn list-popular-faq-tags-fn [context]
+  (let [get-popular-faq-tags (get-in context [:request :database :get-popular-faq-tags])]
+    (assoc context :response (resp/ok (get-popular-faq-tags)))))
+
+(def list-popular-faq-tags
+  {:name :list-popular-faq-tags
+   :enter list-popular-faq-tags-fn})

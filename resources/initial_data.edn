@@ -92,4 +92,4 @@
         4 {:id 4
            :title "Can I use a <?> tag during a new government bonus"
            :body "No. You can only use <?> tags while taking an action"
-           :tags ["turmoil" "?-tag"]}}}
+           :tags ["turmoil" "?-tag" "general"]}}}
