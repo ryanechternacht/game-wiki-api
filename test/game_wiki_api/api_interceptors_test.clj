@@ -57,15 +57,15 @@
           (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
 
 ; requires rebinding io.pedestal.http.route/*url-for*
-(deftest create-card-fn-test
-  (testing "Create Card Function Test"
+(deftest create-update-card-fn-test
+  (testing "Put Card Function Test"
     (binding [route/*url-for* (fn [a b c] "")]
       (let [card-data {:name "hello, world"}
             db-map {:save-card! (fn [card] (assoc card :id 1))}
             before-context {:other "other-val"
                             :request {:json-params card-data
                                       :database db-map}}
-            after-context (create-card-fn before-context)]
+            after-context (create-update-card-fn before-context)]
         (is (= (:other before-context) (:other after-context)) "context is preserved")
         (is (= (:name card-data) (get-in after-context [:response :body :name])) "body has the new card")))))
 

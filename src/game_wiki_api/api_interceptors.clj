@@ -65,7 +65,8 @@
   {:name :view-card
    :enter view-card-fn})
 
-(defn create-card-fn [context]
+(defn create-update-card-fn [context]
+  (prn context)
   (let [card-data (get-in context [:request :json-params])
         save-card! (get-in context [:request :database :save-card!])]
     (if (domain/validate-new-card card-data)
@@ -75,9 +76,9 @@
                :response (resp/created new-card "Location" url)))
       (assoc context :response (resp/invalid {:error "Card data not properly supplied"})))))
 
-(def create-card
-  {:name :create-card
-   :enter create-card-fn})
+(def create-update-card
+  {:name :create-update-card
+   :enter create-update-card-fn})
 
 ;; faq interceptor
 (defn view-faq-fn [context]
@@ -116,3 +117,11 @@
 (def list-popular-faq-tags
   {:name :list-popular-faq-tags
    :enter list-popular-faq-tags-fn})
+
+;; (defn create-update-faq-fn [context]
+;;   (let [faq-data (domain/supply-default-faq-fields (get-in context [:request :json-params]))
+;;         save-faq! (get-in context [:request :database :save-faq!])]
+;;     (if (domain/validate-new-faq faq-data)
+;;       (let [new-faq (save-faq! faq-data)]
+;;         )
+;;       (assoc context :response (resp/invalid {:error "Faq requires body and title"})))))

@@ -31,11 +31,10 @@
   (fn [card]
     (do
       (swap! db (fn [db-val]
-                  (do
-                    (let [c (if (:id card)
-                              card
-                              (assoc card :id (get-next-card-id db-val)))]
-                      (assoc-in db-val [:cards (:id c)] c))))))))
+                  (let [c (if (:id card)
+                            card
+                            (assoc card :id (get-next-card-id db-val)))]
+                    (assoc-in db-val [:cards (:id c)] c)))))))
 
 ;; faq calls
 (defn read-faq-by-id [db]
@@ -68,6 +67,19 @@
          (take 4)
          (map first))))
 
+(defn get-next-faq-id [db-val]
+  (inc
+   (reduce max (keys (:faqs db-val)))))
+
+(defn save-faq! [db]
+  (fn [faq]
+    (do
+      (swap! db (fn [db-val]
+                  (let [f (if (:id faq)
+                            faq
+                            (assoc faq :id (get-next-faq-id db-val)))]
+                    (assoc-in db-val [:faqs (:id f)] f)))))))
+
 (defn get-db-map
   "Takes an atom representing an in memory database. 
    If none is supplied uses the default db atom"
@@ -79,5 +91,6 @@
     :read-faqs-simple (read-faqs-simple db)
     :read-faq-by-id (read-faq-by-id db)
     :search-faqs (search-faqs db)
-    :get-popular-faq-tags (get-popular-faq-tags db)}))
+    :get-popular-faq-tags (get-popular-faq-tags db)
+    :save-faq! (save-faq! db)}))
 

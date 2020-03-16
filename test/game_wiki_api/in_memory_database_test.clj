@@ -37,7 +37,7 @@
     (testing "empty throws error"
       (is (thrown? Exception (get-next-card-id {}))))))
 
-(deftest save-card-test
+(deftest save-card!-test
   (testing "Save Card Test"
     (let [db-val {:cards {1 {:id 1 :name "card 1"} 2 {:id 2 :name "card 2"}}}
           db (atom db-val)
@@ -108,3 +108,36 @@
         (is (<= 4 (count tags)) "no more than 4 results are returned")
         (is (some #(= 1 %) tags) "contains 1, the key with the most")
         (is (every? #(not= 6 %) tags) "doesn't contain 6, the key with the least")))))
+
+(deftest get-next-faq-id-test
+  (testing "Get Next Faq ID Test"
+    (testing "simple case"
+      (is (= 2 (get-next-faq-id {:faqs {1 {}}}))))
+    (testing "advanced case"
+      (is (= 4 (get-next-faq-id {:faqs {1 {} 2 {} 3 {}}}))))
+    (testing "missing ids"
+      (is (= 11 (get-next-faq-id {:faqs {10 {}}}))))
+    (testing "empty throws error"
+      (is (thrown? Exception (get-next-faq-id {}))))))
+
+(deftest save-faq!-test
+  (testing "Save Faq Test"
+    (let [db-val {:faqs {1 {:id 1 :title "faq 1"} 2 {:id 2 :title "faq 2"}}}
+          db (atom db-val)
+          save-faq! (:save-faq! (get-db-map db))]
+      (is save-faq! "save-faq! is defined")
+      (testing "Creating a New Faq"
+        (let [new-faq {:title "faq 3" :body "body 3"}]
+          (do
+            (save-faq! new-faq)
+            (is (= (:title new-faq) (get-in @db [:faqs 3 :title])) "new faq (title) was saved correctly")
+            (is (= (:body new-faq) (get-in @db [:faqs 3 :body])) "new faq (body) was saved correctly")
+            (is (= 3 (count (:faqs @db))) "faq count is updated"))))
+      (testing "Updated an Existing Faq"
+        (let [updated-faq {:id 1 :title "updated faq 1" :body "new body 1"}
+              pre-update-count (count (:faqs @db))]
+          (do
+            (save-faq! updated-faq)
+            (is (= pre-update-count (count (:faqs @db))) "faq count wasn't changed")
+            (is (= (:title updated-faq) (get-in @db [:faqs 1 :title])) "faq title was changed")
+            (is (= (:body updated-faq) (get-in @db [:faqs 1 :body])) "faq body was changed")))))))

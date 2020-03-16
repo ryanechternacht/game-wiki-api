@@ -4,4 +4,12 @@
 
 (defn validate-new-card [card]
   (let [nm (:name card)]
-    (not (nil? nm)))) ;; i add more things here eventually
+    (not (nil? nm)))) ;; add more things here eventually
+
+(defn supply-default-faq-fields [faq]
+  (assoc faq :tags (:tags faq [])))
+
+(defn validate-new-faq [faq]
+  (and (not (nil? (:title faq)))
+       (not (nil? (:body faq)))
+       (not (nil? (:tags faq)))))
