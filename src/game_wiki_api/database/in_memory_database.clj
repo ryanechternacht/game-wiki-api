@@ -30,11 +30,16 @@
 (defn save-card! [db]
   (fn [card]
     (do
-      (swap! db (fn [db-val]
-                  (let [c (if (:id card)
-                            card
-                            (assoc card :id (get-next-card-id db-val)))]
-                    (assoc-in db-val [:cards (:id c)] c)))))))
+      ;; this feels wrong, but I want to keep the get-next-card-id call
+      ;; in the databases transaction
+      (let [result (atom {})]
+        (swap! db (fn [db-val]
+                    (let [c (if (:id card)
+                              card
+                              (assoc card :id (get-next-card-id db-val)))]
+                      (swap! result (fn [_] c))
+                      (assoc-in db-val [:cards (:id c)] c))))
+        @result))))
 
 ;; faq calls
 (defn read-faq-by-id [db]
@@ -74,11 +79,14 @@
 (defn save-faq! [db]
   (fn [faq]
     (do
-      (swap! db (fn [db-val]
-                  (let [f (if (:id faq)
-                            faq
-                            (assoc faq :id (get-next-faq-id db-val)))]
-                    (assoc-in db-val [:faqs (:id f)] f)))))))
+      (let [result (atom {})]
+        (swap! db (fn [db-val]
+                    (let [f (if (:id faq)
+                              faq
+                              (assoc faq :id (get-next-faq-id db-val)))]
+                      (swap! result (fn [_] f))
+                      (assoc-in db-val [:faqs (:id f)] f))))
+        @result))))
 
 (defn get-db-map
   "Takes an atom representing an in memory database. 

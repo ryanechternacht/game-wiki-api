@@ -59,7 +59,7 @@
 ; requires rebinding io.pedestal.http.route/*url-for*
 (deftest create-update-card-fn-test
   (testing "Put Card Function Test"
-    (binding [route/*url-for* (fn [a b c] "")]
+    (binding [route/*url-for* (fn [_ _ _] "")]
       (let [card-data {:name "hello, world"}
             db-map {:save-card! (fn [card] (assoc card :id 1))}
             before-context {:other "other-val"

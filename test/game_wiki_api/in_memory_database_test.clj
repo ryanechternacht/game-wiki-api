@@ -47,17 +47,19 @@
       (testing "creating a new card"
         (let [new-card {:name "card 3"}]
           (do
-            (save-card! new-card)
-            (is (= (:name new-card) (get-in @db [:cards 3 :name])) "Card was added with the correct name")
-            (is (= 3 (count (:cards @db))) "New card count is corectly"))))
+            (let [returned-card (save-card! new-card)]
+              (is (= new-card (dissoc returned-card :id)) "save-card! returns the new card")
+              (is (= (:name new-card) (get-in @db [:cards 3 :name])) "Card was added with the correct name")
+              (is (= 3 (count (:cards @db))) "New card count is corectly")))))
       (testing "updating an existing card new card"
         (let [new-name "update card 1"
               card {:id 1 :name new-name}
               pre-cards-count (count (:cards @db))]
           (do
-            (save-card! card)
-            (is (= pre-cards-count (count (:cards @db))) "Card count wasn't changed")
-            (is (= new-name (get-in @db [:cards 1 :name])) "Card name was changed")))))))
+            (let [returned-card (save-card! card)]
+              (is (= card returned-card) "save-card! return and card are the same")
+              (is (= pre-cards-count (count (:cards @db))) "Card count wasn't changed")
+              (is (= new-name (get-in @db [:cards 1 :name])) "Card name was changed"))))))))
 
 ;; faq tests
 (deftest read-faq-by-id-test
@@ -129,15 +131,17 @@
       (testing "Creating a New Faq"
         (let [new-faq {:title "faq 3" :body "body 3"}]
           (do
-            (save-faq! new-faq)
-            (is (= (:title new-faq) (get-in @db [:faqs 3 :title])) "new faq (title) was saved correctly")
-            (is (= (:body new-faq) (get-in @db [:faqs 3 :body])) "new faq (body) was saved correctly")
-            (is (= 3 (count (:faqs @db))) "faq count is updated"))))
+            (let [returned-faq (save-faq! new-faq)]
+              (is (= new-faq (dissoc returned-faq :id)) "save-faq! returns the new card")
+              (is (= (:title new-faq) (get-in @db [:faqs 3 :title])) "new faq (title) was saved correctly")
+              (is (= (:body new-faq) (get-in @db [:faqs 3 :body])) "new faq (body) was saved correctly")
+              (is (= 3 (count (:faqs @db))) "faq count is updated")))))
       (testing "Updated an Existing Faq"
         (let [updated-faq {:id 1 :title "updated faq 1" :body "new body 1"}
               pre-update-count (count (:faqs @db))]
           (do
-            (save-faq! updated-faq)
-            (is (= pre-update-count (count (:faqs @db))) "faq count wasn't changed")
-            (is (= (:title updated-faq) (get-in @db [:faqs 1 :title])) "faq title was changed")
-            (is (= (:body updated-faq) (get-in @db [:faqs 1 :body])) "faq body was changed")))))))
+            (let [returned-faq (save-faq! updated-faq)]
+              (is (= updated-faq returned-faq) "save-faq! returns the updated faq")
+              (is (= pre-update-count (count (:faqs @db))) "faq count wasn't changed")
+              (is (= (:title updated-faq) (get-in @db [:faqs 1 :title])) "faq title was changed")
+              (is (= (:body updated-faq) (get-in @db [:faqs 1 :body])) "faq body was changed"))))))))
