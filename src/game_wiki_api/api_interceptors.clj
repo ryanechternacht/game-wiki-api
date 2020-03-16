@@ -19,7 +19,7 @@
    :enter
    (fn [context]
      (let [request (:request context)]
-       (print request)
+       (prn request)
        request))})
 
 (def echo

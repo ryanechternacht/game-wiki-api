@@ -135,7 +135,7 @@
     (let [list-popular-faq-tags-fn (:enter list-popular-faq-tags)]
       (is list-popular-faq-tags-fn "list-popular-faq-tags has an enter fn")
       (let [tags '("hello" "world")
-            db-map {:get-popular-faq-tags (fn [] (prn "hello") tags)}
+            db-map {:get-popular-faq-tags (fn [] tags)}
             before-context {:request {:database db-map}
                             :other "other"}
             after-context (list-popular-faq-tags-fn before-context)]
