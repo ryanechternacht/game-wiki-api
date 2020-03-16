@@ -121,3 +121,16 @@
           after-context (list-popular-faq-tags-fn before-context)]
       (is (= tags (get-in after-context [:response :body])) "tags are returned")
       (is (= (:other before-context) (:other after-context)) "context is preserved"))))
+
+; requires rebinding io.pedestal.http.route/*url-for*
+(deftest create-update-faq-fn-test
+  (testing "Put Faq Function Test"
+    (binding [route/*url-for* (fn [_ _ _] "")]
+      (let [faq-data {:title "hello, world" :body "body" :tags []}
+            db-map {:save-faq! (fn [faq] (assoc faq :id 1))}
+            before-context {:other "other-val"
+                            :request {:json-params faq-data
+                                      :database db-map}}
+            after-context (create-update-faq-fn before-context)]
+        (is (= (:other before-context) (:other after-context)) "context is preserved")
+        (is (= faq-data (dissoc (get-in after-context [:response :body]) :id)) "body has the new faq")))))

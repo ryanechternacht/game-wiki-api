@@ -15,7 +15,8 @@
      ["/json" :post [(body-params/body-params) api/echo-json-body]]
      ["/faqs" :get [api/db-interceptor api/list-faqs-simple]]
      ["/faq/:faq-id" :get [api/db-interceptor api/view-faq]]
-     ["/faqs/:faq-search" :get [api/db-interceptor api/search-faqs]]}))
+     ["/faqs/:faq-search" :get [api/db-interceptor api/search-faqs]]
+     ["/faqs" :post [(body-params/body-params) api/db-interceptor api/create-update-faq]]}))
 
 ;;; Service
 (def service-map

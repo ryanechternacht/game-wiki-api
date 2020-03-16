@@ -66,7 +66,6 @@
    :enter view-card-fn})
 
 (defn create-update-card-fn [context]
-  (prn context)
   (let [card-data (get-in context [:request :json-params])
         save-card! (get-in context [:request :database :save-card!])]
     (if (domain/validate-new-card card-data)
@@ -118,10 +117,17 @@
   {:name :list-popular-faq-tags
    :enter list-popular-faq-tags-fn})
 
-;; (defn create-update-faq-fn [context]
-;;   (let [faq-data (domain/supply-default-faq-fields (get-in context [:request :json-params]))
-;;         save-faq! (get-in context [:request :database :save-faq!])]
-;;     (if (domain/validate-new-faq faq-data)
-;;       (let [new-faq (save-faq! faq-data)]
-;;         )
-;;       (assoc context :response (resp/invalid {:error "Faq requires body and title"})))))
+(defn create-update-faq-fn [context]
+  (prn (:request context))
+  (let [faq-data (domain/supply-default-faq-fields (get-in context [:request :json-params]))
+        save-faq! (get-in context [:request :database :save-faq!])]
+    (if (domain/validate-new-faq faq-data)
+      (let [new-faq (save-faq! faq-data)
+            url (route/url-for :view-faq :params {:faq-id (:id new-faq)})]
+        (assoc context :response
+               (resp/created new-faq "Location" url)))
+      (assoc context :response (resp/invalid {:error "Faq requires body and title"})))))
+
+(def create-update-faq
+  {:name :create-update-faq
+   :enter create-update-faq-fn})
