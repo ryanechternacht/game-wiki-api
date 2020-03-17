@@ -4,19 +4,24 @@
             [io.pedestal.test :as test]
             [io.pedestal.http.route :as route]
             [cheshire.core :as json]
-            [game-wiki-api.api-interceptors :as api]))
+            [game-wiki-api.api-interceptors :as ints]))
 
 ;;; Routes
+;; (def numeric #"[0-9]+")
+;; (def url-rules {:card-id numeric :faq-id numeric})
+
 (def routes
   (route/expand-routes
-   #{["/cards" :get [api/db-interceptor api/list-cards]]
-     ["/card/:card-id" :get [api/db-interceptor api/view-card]]
-     ["/cards" :post [(body-params/body-params) api/db-interceptor api/create-update-card]]
-     ["/json" :post [(body-params/body-params) api/echo-json-body]]
-     ["/faqs" :get [api/db-interceptor api/list-faqs-simple]]
-     ["/faq/:faq-id" :get [api/db-interceptor api/view-faq]]
-     ["/faqs/:faq-search" :get [api/db-interceptor api/search-faqs]]
-     ["/faqs" :post [(body-params/body-params) api/db-interceptor api/create-update-faq]]}))
+   #{["/cards" :get [ints/attach-db ints/get-cards]]
+     ["/card/:card-id" :get [ints/attach-db ints/get-card]]; :constraints url-rules]
+     ["/cards" :post [(body-params/body-params) ints/attach-db ints/post-put-card]]
+     ["/faqs/popular-tags" :get [ints/attach-db ints/get-popular-faq-tags]]
+     ["/faqs" :get [ints/attach-db ints/get-faqs-simple]]
+     ["/faq/:faq-id" :get [ints/attach-db ints/get-faq]]; :constraints url-rules]
+     ["/faqs/search/:faq-search" :get [ints/attach-db ints/search-faqs]]
+     ["/faqs" :post [(body-params/body-params) ints/attach-db ints/post-put-faq]]}))
+     ;; testing
+     ;; ["/json" :post [(body-params/body-params) ints/echo-json-body]]
 
 ;;; Service
 (def service-map

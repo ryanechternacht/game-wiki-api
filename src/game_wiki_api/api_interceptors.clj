@@ -7,8 +7,8 @@
 
 (def db-map (db/get-db-map))
 
-(def db-interceptor
-  {:name :db-interceptor
+(def attach-db
+  {:name :attach-db
    :enter
    (fn [context]
      (assoc-in context [:request :database] db-map))})
@@ -38,8 +38,8 @@
        (assoc context :response (resp/ok json))))})
 
 ;; card interceptors
-(def list-cards
-  {:name :list-cards
+(def get-cards
+  {:name :get-cards
    :enter
    (fn [context]
      (let [read-cards (get-in context [:request :database :read-cards])
@@ -47,8 +47,8 @@
            response (resp/ok cards)]
        (assoc context :response response)))})
 
-(def view-card
-  {:name :view-card
+(def get-card
+  {:name :get-card
    :enter
    (fn [context]
      (let [read-card-by-id (get-in context [:request :database :read-card-by-id])]
@@ -59,22 +59,22 @@
            context)
          context)))})
 
-(def create-update-card
-  {:name :create-update-card
+(def post-put-card
+  {:name :post-put-card
    :enter
    (fn [context]
      (let [card-data (get-in context [:request :json-params])
            save-card! (get-in context [:request :database :save-card!])]
        (if (domain/validate-new-card card-data)
          (let [new-card (save-card! card-data)
-               url (route/url-for :view-card :params {:card-id (:id new-card)})]
+               url (route/url-for :get-card :params {:card-id (:id new-card)})]
            (assoc context
                   :response (resp/created new-card "Location" url)))
          (assoc context :response (resp/invalid {:error "Card data not properly supplied"})))))})
 
 ;; faq interceptor
-(def view-faq
-  {:name :view-faq
+(def get-faq
+  {:name :get-faq
    :enter
    (fn [context]
      (let [read-faq-by-id (get-in context [:request :database :read-faq-by-id])]
@@ -84,8 +84,8 @@
            context)
          context)))})
 
-(def list-faqs-simple
-  {:name :list-faqs-simple
+(def get-faqs-simple
+  {:name :get-faqs-simple
    :enter
    (fn [context]
      (let [read-faqs-simple (get-in context [:request :database :read-faqs-simple])]
@@ -99,22 +99,22 @@
            search-query (get-in context [:request :path-params :faq-search])]
        (assoc context :response (resp/ok (search-faqs search-query)))))})
 
-(def list-popular-faq-tags
-  {:name :list-popular-faq-tags
+(def get-popular-faq-tags
+  {:name :get-popular-faq-tags
    :enter
    (fn [context]
-     (let [get-popular-faq-tags (get-in context [:request :database :get-popular-faq-tags])]
-       (assoc context :response (resp/ok (get-popular-faq-tags)))))})
+     (let [gpft (get-in context [:request :database :get-popular-faq-tags])]
+       (assoc context :response (resp/ok (gpft)))))})
 
-(def create-update-faq
-  {:name :create-update-faq
+(def post-put-faq
+  {:name :post-put-faq
    :enter
    (fn [context]
      (let [faq-data (domain/supply-default-faq-fields (get-in context [:request :json-params]))
            save-faq! (get-in context [:request :database :save-faq!])]
        (if (domain/validate-new-faq faq-data)
          (let [new-faq (save-faq! faq-data)
-               url (route/url-for :view-faq :params {:faq-id (:id new-faq)})]
+               url (route/url-for :get-faq :params {:faq-id (:id new-faq)})]
            (assoc context :response
                   (resp/created new-faq "Location" url)))
          (assoc context :response (resp/invalid {:error "Faq requires body and title"})))))})
