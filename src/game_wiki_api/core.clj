@@ -13,8 +13,9 @@
 (def routes
   (route/expand-routes
    #{["/cards" :get [ints/attach-db ints/get-cards]]
+     ["/cards" :post [(body-params/body-params) ints/attach-db ints/post-card]]
      ["/card/:card-id" :get [ints/attach-db ints/get-card] :constraints {:card-id numeric}]
-     ["/cards" :post [(body-params/body-params) ints/attach-db ints/post-put-card]]
+     ["/card/:card-id" :put [(body-params/body-params) ints/attach-db ints/put-card] :constraints {:card-id numeric}]
      ["/faqs/popular-tags" :get [ints/attach-db ints/get-popular-faq-tags]]
      ["/faqs" :get [ints/attach-db ints/get-faqs-simple]]
      ["/faq/:faq-id" :get [ints/attach-db ints/get-faq] :constraints {:faq-id numeric}]

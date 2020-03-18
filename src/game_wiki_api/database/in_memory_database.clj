@@ -27,7 +27,7 @@
   (inc
    (reduce max (keys (:cards db-val)))))
 
-(defn save-card! [db]
+(defn create-card! [db]
   (fn [card]
     (do
       ;; this feels wrong, but I want to keep the get-next-card-id call
@@ -40,6 +40,11 @@
                       (swap! result (fn [_] c))
                       (assoc-in db-val [:cards (:id c)] c))))
         @result))))
+
+(defn update-card! [db]
+  (fn [card]
+    (swap! db (fn [db-val] (assoc-in db-val [:cards (:id card)] card)))
+    card))
 
 ;; faq calls
 (defn read-faq-by-id [db]
@@ -95,7 +100,8 @@
   ([db]
    {:read-cards (read-cards db)
     :read-card-by-id (read-card-by-id db)
-    :save-card! (save-card! db)
+    :create-card! (create-card! db)
+    :update-card! (update-card! db)
     :read-faqs-simple (read-faqs-simple db)
     :read-faq-by-id (read-faq-by-id db)
     :search-faqs (search-faqs db)

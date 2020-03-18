@@ -6,6 +6,9 @@
   (let [nm (:name card)]
     (not (nil? nm)))) ;; add more things here eventually
 
+(defn validate-update-card [card]
+  (and (:id card) (validate-new-card card)))
+
 (defn supply-default-faq-fields [faq]
   (assoc faq :tags (:tags faq [])))
 

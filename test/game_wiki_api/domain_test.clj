@@ -10,6 +10,15 @@
     (testing "invalid cards"
       (is (not (validate-new-card {:other "other"})) "missing name"))))
 
+(deftest validate-update-card-test
+  (testing "Validate Update Card Test"
+    (let [card {:name "name" :extra "extra" :id 1}]
+      (testing "valid cards"
+        (is (validate-update-card card) "validates legal card"))
+      (testing "invalid cards"
+        (is (not (validate-update-card (dissoc card :id))) "card requires id")
+        (is (not (validate-update-card (dissoc card :name))) "card require name")))))
+
 (deftest validate-new-faq-test
   (testing "Validate New Faq Test"
     (let [faq {:title "title" :body "body" :tags [] :extra "extra"}]

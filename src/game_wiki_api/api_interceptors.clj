@@ -59,18 +59,31 @@
            context)
          context)))})
 
-(def post-put-card
-  {:name :post-put-card
+(def post-card
+  {:name :post-card
    :enter
    (fn [context]
      (let [card-data (get-in context [:request :json-params])
-           save-card! (get-in context [:request :database :save-card!])]
+           create-card! (get-in context [:request :database :create-card!])]
        (if (domain/validate-new-card card-data)
-         (let [new-card (save-card! card-data)
+         (let [new-card (create-card! card-data)
                url (route/url-for :get-card :params {:card-id (:id new-card)})]
            (assoc context
                   :response (resp/created new-card "Location" url)))
-         (assoc context :response (resp/invalid {:error "Card data not properly supplied"})))))})
+         (assoc context :response (resp/invalid {:error "Invalid card data supplied"})))))})
+
+(def put-card
+  {:name :put-card
+   :enter
+   (fn [context]
+     (let [card-data (get-in context [:request :json-params])
+           update-card! (get-in context [:request :database :update-card!])]
+       (if (domain/validate-update-card card-data)
+         (let [updated-card (update-card! card-data)
+               url (route/url-for :get-card :params {:card-id (:id updated-card)})]
+           (assoc context
+                  :response (resp/created updated-card "Location" url)))
+         (assoc context :response (resp/invalid {:error "Invalid card data supplied"})))))})
 
 ;; faq interceptor
 (def get-faq

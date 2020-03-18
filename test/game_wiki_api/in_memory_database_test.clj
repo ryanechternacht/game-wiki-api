@@ -37,29 +37,36 @@
     (testing "empty throws error"
       (is (thrown? Exception (get-next-card-id {}))))))
 
-(deftest save-card!-test
-  (testing "Save Card Test"
+(deftest create-card!-test
+  (testing "Create Card Test"
     (let [db-val {:cards {1 {:id 1 :name "card 1"} 2 {:id 2 :name "card 2"}}}
           db (atom db-val)
           funcs (get-db-map db)
-          save-card! (:save-card! funcs)]
-      (is save-card! "save-card is defined")
-      (testing "creating a new card"
-        (let [new-card {:name "card 3"}]
-          (do
-            (let [returned-card (save-card! new-card)]
-              (is (= new-card (dissoc returned-card :id)) "save-card! returns the new card")
-              (is (= (:name new-card) (get-in @db [:cards 3 :name])) "Card was added with the correct name")
-              (is (= 3 (count (:cards @db))) "New card count is corectly")))))
-      (testing "updating an existing card new card"
-        (let [new-name "update card 1"
-              card {:id 1 :name new-name}
-              pre-cards-count (count (:cards @db))]
-          (do
-            (let [returned-card (save-card! card)]
-              (is (= card returned-card) "save-card! return and card are the same")
-              (is (= pre-cards-count (count (:cards @db))) "Card count wasn't changed")
-              (is (= new-name (get-in @db [:cards 1 :name])) "Card name was changed"))))))))
+          create-card! (:create-card! funcs)]
+      (is create-card! "save-card is defined")
+      (let [new-card {:name "card 3"}
+            pre-cards-count (count (:cards @db))]
+        (do
+          (let [returned-card (create-card! new-card)]
+            (is (= new-card (dissoc returned-card :id)) "create-card! returns the new card")
+            (is (= (:name new-card) (get-in @db [:cards 3 :name])) "Card was added with the correct name")
+            (is (= (inc pre-cards-count) (count (:cards @db))) "New card count is corectly")))))))
+
+(deftest update-card!-test
+  (testing "Update Card Test"
+    (let [db-val {:cards {1 {:id 1 :name "card 1"} 2 {:id 2 :name "card 2"}}}
+          db (atom db-val)
+          new-name "update card 1"
+          funcs (get-db-map db)
+          update-card! (:update-card! funcs)]
+      (is update-card! "update-card! is defined")
+      (let [card {:id 1 :name new-name}
+            pre-cards-count (count (:cards @db))]
+        (do
+          (let [returned-card (update-card! card)]
+            (is (= card returned-card) "update-card! return and card are the same")
+            (is (= pre-cards-count (count (:cards @db))) "Card count wasn't changed")
+            (is (= new-name (get-in @db [:cards 1 :name])) "Card name was changed")))))))
 
 ;; faq tests
 (deftest read-faq-by-id-test

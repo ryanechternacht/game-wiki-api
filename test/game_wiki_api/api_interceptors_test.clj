@@ -4,7 +4,7 @@
             [io.pedestal.http.route :as route]))
 
 (deftest attach-db-test
-  (testing "Attach Db Function Test"
+  (testing "Attach Db Test"
     (let [attach-db-fn (:enter attach-db)]
       (is attach-db-fn "attach-db interceptor has an enter fn")
       (let [before-context {:other "other val"}
@@ -14,7 +14,7 @@
 
 ;; testing interceptors
 (deftest echo-test
-  (testing "Echo Function Test"
+  (testing "Echo Test"
     (let [echo-fn (:enter echo)]
       (is echo-fn "echo interceptor has an enter fn")
       (let [before-context {:test "test-val"}
@@ -23,7 +23,7 @@
         (is (= (:test before-context) (:test after-context)) "context preserved")))))
 
 (deftest echo-json-body-test
-  (testing "Echo Json Body Function Test"
+  (testing "Echo Json Body Test"
     (let [echo-json-body-fn (:enter echo-json-body)]
       (is echo-json-body-fn "echo-json-body has an enter fn")
       (let [before-context {:other "other-val"
@@ -34,7 +34,7 @@
 
 ;; card interceptors
 (deftest get-cards-test
-  (testing "Get Cards Function Test"
+  (testing "Get Cards Test"
     (let [get-cards-fn (:enter get-cards)]
       (is get-cards-fn "get-cards has an enter fn")
       (let [cards [1 2 3]
@@ -45,7 +45,7 @@
         (is (= (:other-val before-context) (:other-val after-context)) "context is preserved")))))
 
 (deftest get-card-test
-  (testing "Get Card Function Test"
+  (testing "Get Card Test"
     (let [get-card-fn (:enter get-card)
           card-id 1234
           card {:name "hello, world" :id card-id}
@@ -67,23 +67,37 @@
           (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
 
 ; requires rebinding io.pedestal.http.route/*url-for*
-(deftest post-put-card-test
-  (testing "Post-Put Card Function Test"
-    (let [post-put-card-fn (:enter post-put-card)]
-      (is post-put-card-fn "post-put-card has an enter fn")
+(deftest post-card-test
+  (testing "Post Card Test"
+    (let [post-card-fn (:enter post-card)]
+      (is post-card-fn "post-card has an enter fn")
       (binding [route/*url-for* (fn [_ _ _] "")]
         (let [card-data {:name "hello, world"}
-              db-map {:save-card! (fn [card] (assoc card :id 1))}
+              db-map {:create-card! (fn [card] (assoc card :id 1))}
               before-context {:other "other-val"
                               :request {:json-params card-data
                                         :database db-map}}
-              after-context (post-put-card-fn before-context)]
+              after-context (post-card-fn before-context)]
           (is (= (:other before-context) (:other after-context)) "context is preserved")
           (is (= (:name card-data) (get-in after-context [:response :body :name])) "body has the new card"))))))
 
+(deftest put-card-test
+  (testing "Put Card Test"
+    (let [put-card-fn (:enter put-card)]
+      (is put-card-fn "put-card has an enter fn")
+      (binding [route/*url-for* (fn [_ _ _] "")]
+        (let [card-data {:name "hello, world" :id 2}
+              db-map {:update-card! (fn [card] card)}
+              before-context {:other "other-val"
+                              :request {:json-params card-data
+                                        :database db-map}}
+              after-context (put-card-fn before-context)]
+          (is (= card-data (get-in after-context [:response :body])) "body is the updated card")
+          (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
+
 ;; faq interceptors
 (deftest get-faq-test
-  (testing "Get Faq Function Test"
+  (testing "Get Faq Test"
     (let [get-faq-fn (:enter get-faq)
           faq-id 1234
           faq {:name "hello, world" :id faq-id}
@@ -144,7 +158,7 @@
 
 ; requires rebinding io.pedestal.http.route/*url-for*
 (deftest post-put-faq-test
-  (testing "Put Faq Function Test"
+  (testing "Put Faq Test"
     (let [post-put-faq-fn (:enter post-put-faq)]
       (is post-put-faq-fn "post-put-faq has an enter fn")
       (binding [route/*url-for* (fn [_ _ _] "")]
