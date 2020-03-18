@@ -1,7 +1,6 @@
 (ns game-wiki-api.domain)
 
 ;; This probably needs a better name
-
 (defn validate-new-card [card]
   (let [nm (:name card)]
     (not (nil? nm)))) ;; add more things here eventually
@@ -16,3 +15,6 @@
   (and (not (nil? (:title faq)))
        (not (nil? (:body faq)))
        (not (nil? (:tags faq)))))
+
+(defn validate-update-faq [faq]
+  (and (:id faq) (validate-new-faq faq)))

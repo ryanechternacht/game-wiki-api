@@ -129,26 +129,32 @@
     (testing "empty throws error"
       (is (thrown? Exception (get-next-faq-id {}))))))
 
-(deftest save-faq!-test
-  (testing "Save Faq Test"
+(deftest create-faq!-test
+  (testing "Create Faq Test"
     (let [db-val {:faqs {1 {:id 1 :title "faq 1"} 2 {:id 2 :title "faq 2"}}}
           db (atom db-val)
-          save-faq! (:save-faq! (get-db-map db))]
-      (is save-faq! "save-faq! is defined")
-      (testing "Creating a New Faq"
-        (let [new-faq {:title "faq 3" :body "body 3"}]
-          (do
-            (let [returned-faq (save-faq! new-faq)]
-              (is (= new-faq (dissoc returned-faq :id)) "save-faq! returns the new card")
-              (is (= (:title new-faq) (get-in @db [:faqs 3 :title])) "new faq (title) was saved correctly")
-              (is (= (:body new-faq) (get-in @db [:faqs 3 :body])) "new faq (body) was saved correctly")
-              (is (= 3 (count (:faqs @db))) "faq count is updated")))))
-      (testing "Updated an Existing Faq"
-        (let [updated-faq {:id 1 :title "updated faq 1" :body "new body 1"}
-              pre-update-count (count (:faqs @db))]
-          (do
-            (let [returned-faq (save-faq! updated-faq)]
-              (is (= updated-faq returned-faq) "save-faq! returns the updated faq")
-              (is (= pre-update-count (count (:faqs @db))) "faq count wasn't changed")
-              (is (= (:title updated-faq) (get-in @db [:faqs 1 :title])) "faq title was changed")
-              (is (= (:body updated-faq) (get-in @db [:faqs 1 :body])) "faq body was changed"))))))))
+          create-faq! (:create-faq! (get-db-map db))]
+      (is create-faq! "create-faq! is defined")
+      (let [new-faq {:title "faq 3" :body "body 3"}
+            pre-create-count (count (:faqs @db))]
+        (do
+          (let [returned-faq (create-faq! new-faq)]
+            (is (= new-faq (dissoc returned-faq :id)) "create-faq! returns the new card")
+            (is (= (:title new-faq) (get-in @db [:faqs 3 :title])) "new faq (title) was saved correctly")
+            (is (= (:body new-faq) (get-in @db [:faqs 3 :body])) "new faq (body) was saved correctly")
+            (is (= (inc pre-create-count) (count (:faqs @db))) "faq count is updated")))))))
+
+(deftest update-faq!-test
+  (testing "Update Faq Test"
+    (let [db-val {:faqs {1 {:id 1 :title "faq 1"} 2 {:id 2 :title "faq 2"}}}
+          db (atom db-val)
+          update-faq! (:update-faq! (get-db-map db))]
+      (is update-faq! "update-faq! is defined")
+      (let [updated-faq {:id 1 :title "updated faq 1" :body "new body 1"}
+            pre-update-count (count (:faqs @db))]
+        (do
+          (let [returned-faq (update-faq! updated-faq)]
+            (is (= updated-faq returned-faq) "update-faq! returns the updated faq")
+            (is (= pre-update-count (count (:faqs @db))) "faq count wasn't changed")
+            (is (= (:title updated-faq) (get-in @db [:faqs 1 :title])) "faq title was changed")
+            (is (= (:body updated-faq) (get-in @db [:faqs 1 :body])) "faq body was changed")))))))

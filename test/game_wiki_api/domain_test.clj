@@ -29,6 +29,17 @@
         (is (not (validate-new-faq (dissoc faq :body))) "should require :body")
         (is (not (validate-new-faq (dissoc faq :tags))) "should require :tags")))))
 
+(deftest validate-update-faq-test
+  (testing "Validate Update Faq Test"
+    (let [faq {:title "title" :body "body" :tags [] :extra "extra" :id 1}]
+      (testing "valid faq"
+        (is (validate-update-faq faq) "validates legal faq"))
+      (testing "invalid faqs"
+        (is (not (validate-update-faq (dissoc faq :title))) "should require :title")
+        (is (not (validate-update-faq (dissoc faq :body))) "should require :body")
+        (is (not (validate-update-faq (dissoc faq :tags))) "should require :tags ")
+        (is (not (validate-update-faq (dissoc faq :id))) " should require :id")))))
+
 (deftest supply-default-faq-fields-test
   (testing "Supply Default Faq Fields Test"
     (testing "supplies blank fields"

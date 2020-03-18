@@ -81,7 +81,12 @@
   (inc
    (reduce max (keys (:faqs db-val)))))
 
-(defn save-faq! [db]
+(defn update-faq! [db]
+  (fn [faq]
+    (swap! db (fn [db-val] (assoc-in db-val [:faqs (:id faq)] faq)))
+    faq))
+
+(defn create-faq! [db]
   (fn [faq]
     (do
       (let [result (atom {})]
@@ -106,5 +111,5 @@
     :read-faq-by-id (read-faq-by-id db)
     :search-faqs (search-faqs db)
     :get-popular-faq-tags (get-popular-faq-tags db)
-    :save-faq! (save-faq! db)}))
-
+    :update-faq! (update-faq! db)
+    :create-faq! (create-faq! db)}))

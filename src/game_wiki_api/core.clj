@@ -18,9 +18,10 @@
      ["/card/:card-id" :put [(body-params/body-params) ints/attach-db ints/put-card] :constraints {:card-id numeric}]
      ["/faqs/popular-tags" :get [ints/attach-db ints/get-popular-faq-tags]]
      ["/faqs" :get [ints/attach-db ints/get-faqs-simple]]
+     ["/faqs" :post [(body-params/body-params) ints/attach-db ints/post-faq]]
      ["/faq/:faq-id" :get [ints/attach-db ints/get-faq] :constraints {:faq-id numeric}]
-     ["/faqs/search/:faq-search" :get [ints/attach-db ints/search-faqs]]
-     ["/faqs" :post [(body-params/body-params) ints/attach-db ints/post-put-faq]]}))
+     ["/faq/:faq-id" :put [(body-params/body-params) ints/attach-db ints/put-faq]]
+     ["/faqs/search/:faq-search" :get [ints/attach-db ints/search-faqs]]}))
      ;; testing
      ;; ["/json" :post [(body-params/body-params) ints/echo-json-body]]
 

@@ -85,15 +85,14 @@
   (testing "Put Card Test"
     (let [put-card-fn (:enter put-card)]
       (is put-card-fn "put-card has an enter fn")
-      (binding [route/*url-for* (fn [_ _ _] "")]
-        (let [card-data {:name "hello, world" :id 2}
-              db-map {:update-card! (fn [card] card)}
-              before-context {:other "other-val"
-                              :request {:json-params card-data
-                                        :database db-map}}
-              after-context (put-card-fn before-context)]
-          (is (= card-data (get-in after-context [:response :body])) "body is the updated card")
-          (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
+      (let [card-data {:name "hello, world" :id 2}
+            db-map {:update-card! (fn [card] card)}
+            before-context {:other "other-val"
+                            :request {:json-params card-data
+                                      :database db-map}}
+            after-context (put-card-fn before-context)]
+        (is (= card-data (get-in after-context [:response :body])) "body is the updated card")
+        (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 ;; faq interceptors
 (deftest get-faq-test
@@ -157,16 +156,29 @@
         (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 ; requires rebinding io.pedestal.http.route/*url-for*
-(deftest post-put-faq-test
-  (testing "Put Faq Test"
-    (let [post-put-faq-fn (:enter post-put-faq)]
-      (is post-put-faq-fn "post-put-faq has an enter fn")
+(deftest post-faq-test
+  (testing "Post Faq Test"
+    (let [post-faq-fn (:enter post-faq)]
+      (is post-faq-fn "post-faq has an enter fn")
       (binding [route/*url-for* (fn [_ _ _] "")]
         (let [faq-data {:title "hello, world" :body "body" :tags []}
-              db-map {:save-faq! (fn [faq] (assoc faq :id 1))}
+              db-map {:create-faq! (fn [faq] (assoc faq :id 1))}
               before-context {:other "other-val"
                               :request {:json-params faq-data
                                         :database db-map}}
-              after-context (post-put-faq-fn before-context)]
+              after-context (post-faq-fn before-context)]
           (is (= (:other before-context) (:other after-context)) "context is preserved")
           (is (= faq-data (dissoc (get-in after-context [:response :body]) :id)) "body has the new faq"))))))
+
+(deftest put-faq-test
+  (testing "Put Faq Test"
+    (let [put-faq-fn (:enter put-faq)]
+      (is put-faq-fn "put-faq has an enter fn")
+      (let [faq-data {:title "hello, world" :body "body" :tags [] :id 1}
+            db-map {:update-faq! (fn [faq] (assoc faq :id 1))}
+            before-context {:other "other-val"
+                            :request {:json-params faq-data
+                                      :database db-map}}
+            after-context (put-faq-fn before-context)]
+        (is (= (:other before-context) (:other after-context)) "context is preserved")
+        (is (= faq-data (get-in after-context [:response :body])) "body has the new faq")))))

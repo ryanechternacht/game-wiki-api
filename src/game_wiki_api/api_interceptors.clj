@@ -79,10 +79,8 @@
      (let [card-data (get-in context [:request :json-params])
            update-card! (get-in context [:request :database :update-card!])]
        (if (domain/validate-update-card card-data)
-         (let [updated-card (update-card! card-data)
-               url (route/url-for :get-card :params {:card-id (:id updated-card)})]
-           (assoc context
-                  :response (resp/created updated-card "Location" url)))
+         (let [updated-card (update-card! card-data)]
+           (assoc context :response (resp/ok updated-card)))
          (assoc context :response (resp/invalid {:error "Invalid card data supplied"})))))})
 
 ;; faq interceptor
@@ -119,15 +117,26 @@
      (let [gpft (get-in context [:request :database :get-popular-faq-tags])]
        (assoc context :response (resp/ok (gpft)))))})
 
-(def post-put-faq
-  {:name :post-put-faq
+(def post-faq
+  {:name :post-faq
    :enter
    (fn [context]
      (let [faq-data (domain/supply-default-faq-fields (get-in context [:request :json-params]))
-           save-faq! (get-in context [:request :database :save-faq!])]
+           create-faq! (get-in context [:request :database :create-faq!])]
        (if (domain/validate-new-faq faq-data)
-         (let [new-faq (save-faq! faq-data)
+         (let [new-faq (create-faq! faq-data)
                url (route/url-for :get-faq :params {:faq-id (:id new-faq)})]
            (assoc context :response
                   (resp/created new-faq "Location" url)))
          (assoc context :response (resp/invalid {:error "Faq requires body and title"})))))})
+
+(def put-faq
+  {:name :put-faq
+   :enter
+   (fn [context]
+     (let [faq-data (domain/supply-default-faq-fields (get-in context [:request :json-params]))
+           update-faq! (get-in context [:request :database :update-faq!])]
+       (if (domain/validate-update-faq faq-data)
+         (let [updated-faq (update-faq! faq-data)]
+           (assoc context :response (resp/ok updated-faq)))
+         (assoc context :response (resp/invalid {:error "Invalid faq data supplied"})))))})
