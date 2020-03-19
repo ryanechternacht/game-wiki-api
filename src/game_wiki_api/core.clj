@@ -12,16 +12,16 @@
 
 (def routes
   (route/expand-routes
-   #{["/cards" :get [ints/render-result ints/content-negotiation ints/attach-db ints/get-cards]]
-     ["/cards" :post [(body-params/body-params) ints/attach-db ints/post-card]]
-     ["/card/:card-id" :get [ints/attach-db ints/get-card] :constraints {:card-id numeric}]
-     ["/card/:card-id" :put [(body-params/body-params) ints/attach-db ints/put-card] :constraints {:card-id numeric}]
-     ["/faqs/popular-tags" :get [ints/attach-db ints/get-popular-faq-tags]]
-     ["/faqs" :get [ints/attach-db ints/get-faqs-simple]]
-     ["/faqs" :post [(body-params/body-params) ints/attach-db ints/post-faq]]
-     ["/faq/:faq-id" :get [ints/attach-db ints/get-faq] :constraints {:faq-id numeric}]
-     ["/faq/:faq-id" :put [(body-params/body-params) ints/attach-db ints/put-faq]]
-     ["/faqs/search/:faq-search" :get [ints/attach-db ints/search-faqs]]}))
+   #{["/cards" :get (conj ints/common ints/get-cards)]
+     ["/cards" :post (conj ints/common (body-params/body-params) ints/post-card)]
+     ["/card/:card-id" :get (conj ints/common ints/get-card) :constraints {:card-id numeric}]
+     ["/card/:card-id" :put (conj ints/common (body-params/body-params) ints/put-card) :constraints {:card-id numeric}]
+     ["/faqs" :get (conj ints/common ints/get-faqs-simple)]
+     ["/faqs" :post (conj ints/common (body-params/body-params) ints/post-faq)]
+     ["/faq/:faq-id" :get (conj ints/common ints/get-faq) :constraints {:faq-id numeric}]
+     ["/faq/:faq-id" :put (conj ints/common (body-params/body-params) ints/put-faq)]
+     ["/faqs/popular-tags" :get (conj ints/common ints/get-popular-faq-tags)]
+     ["/faqs/search/:faq-search" :get (conj ints/common ints/search-faqs)]}))
      ;; testing
      ;; ["/json" :post [(body-params/body-params) ints/echo-json-body]]
 

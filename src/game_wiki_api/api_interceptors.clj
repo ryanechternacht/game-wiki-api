@@ -41,6 +41,8 @@
                                      :body rendered-body)]
          (assoc context :response updated-response))))})
 
+(def common [content-negotiation render-result attach-db])
+
 ;; testing interceptors
 (def print-request
   {:name :print-request
