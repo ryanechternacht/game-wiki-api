@@ -3,8 +3,12 @@
             [game-wiki-api.http-responses :as resp]
             [game-wiki-api.domain :as domain]
             [clojure.edn :as edn]
-            [io.pedestal.http.route :as route]))
+            [io.pedestal.http.route :as route]
+            [io.pedestal.http.content-negotiation :as con-neg]
+            [cheshire.core :as json]))
 
+;; TODO "common interceptors" - conn-eg, renderer, db
+;; common interceptors
 (def db-map (db/get-db-map))
 
 (def attach-db
@@ -12,6 +16,30 @@
    :enter
    (fn [context]
      (assoc-in context [:request :database] db-map))})
+
+(def supported-types ["text/html" "application/edn" "application/json" "text/plain"])
+
+(def content-negotiation (con-neg/negotiate-content supported-types))
+
+(def render-result
+  {:name :render-result
+   :leave
+   (fn [context]
+     (let [accepted (get-in context [:request :accept :field] "text/html")]
+       (let [response (:response context)
+             body (:body response)
+             headers (:headers response {})
+             rendered-body (case accepted
+                             "text/html" body
+                             "text/plain" body
+                             "application-edn" (pr-str body)
+                             "application/json" (json/encode body)
+                             body)
+
+             updated-response (assoc response
+                                     :headers (assoc headers "Content-Type" accepted)
+                                     :body rendered-body)]
+         (assoc context :response updated-response))))})
 
 ;; testing interceptors
 (def print-request
@@ -42,6 +70,7 @@
   {:name :get-cards
    :enter
    (fn [context]
+     (prn (:request context))
      (let [read-cards (get-in context [:request :database :read-cards])
            cards (read-cards)
            response (resp/ok cards)]

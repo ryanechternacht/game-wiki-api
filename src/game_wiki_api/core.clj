@@ -12,7 +12,7 @@
 
 (def routes
   (route/expand-routes
-   #{["/cards" :get [ints/attach-db ints/get-cards]]
+   #{["/cards" :get [ints/render-result ints/content-negotiation ints/attach-db ints/get-cards]]
      ["/cards" :post [(body-params/body-params) ints/attach-db ints/post-card]]
      ["/card/:card-id" :get [ints/attach-db ints/get-card] :constraints {:card-id numeric}]
      ["/card/:card-id" :put [(body-params/body-params) ints/attach-db ints/put-card] :constraints {:card-id numeric}]
