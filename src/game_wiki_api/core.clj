@@ -29,7 +29,9 @@
 (def service-map
   {::http/routes routes
    ::http/type :jetty
-   ::http/port 8890})
+   ::http/port 8890
+   ;; I can't get general purpose cors working for some reason
+   ::http/allowed-origins ["http://localhost:8081"]})
 
 (defonce server (atom nil))
 
