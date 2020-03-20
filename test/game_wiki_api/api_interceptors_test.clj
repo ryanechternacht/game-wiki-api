@@ -39,6 +39,15 @@
                 after-context (render-result-fn before-context)]
             (is (= (json/encode obj) (get-in after-context [:response :body])) "body is returned as-is")))))))
 
+(deftest add-timestamp-test
+  (testing "Add Timestamp Test"
+    (let [add-timestamp-fn (:leave add-timestamp)]
+      (is add-timestamp-fn "add-timestamp has a leave fn")
+      (let [before-context {:response {:body {:other "other"}} :other "other"}
+            after-context (add-timestamp-fn before-context)]
+        (is (= (:other before-context) (:other after-context)) "context is preserved")
+        (is (get-in after-context [:response :body :generated-at]) ":generated-at was attached")))))
+
 ;; testing interceptors
 (deftest echo-test
   (testing "Echo Test"
