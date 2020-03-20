@@ -9,7 +9,6 @@
             [cheshire.generate :refer [add-encoder encode-str remove-encoder] :as json-gen]
             [java-time :as time]))
 
-;; TODO "common interceptors" - conn-eg, renderer, db
 ;; common interceptors
 (def db-map (db/get-db-map))
 
