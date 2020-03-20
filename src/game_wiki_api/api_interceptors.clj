@@ -35,21 +35,20 @@
   {:name :render-result
    :leave
    (fn [context]
-     (let [accepted (get-in context [:request :accept :field] "text/html")]
-       (let [response (:response context)
-             body (:body response)
-             headers (:headers response {})
-             rendered-body (case accepted
-                             "text/html" body
-                             "text/plain" body
-                             "application-edn" (pr-str body)
-                             "application/json" (json/encode body)
-                             body)
-
-             updated-response (assoc response
-                                     :headers (assoc headers "Content-Type" accepted)
-                                     :body rendered-body)]
-         (assoc context :response updated-response))))})
+     (let [accepted (get-in context [:request :accept :field] "text/html")
+           response (:response context)
+           body (:body response)
+           headers (:headers response {})
+           rendered-body (case accepted
+                           "text/html" body
+                           "text/plain" body
+                           "application/edn" (pr-str body)
+                           "application/json" (json/encode body)
+                           body)
+           updated-response (assoc response
+                                   :headers (assoc headers "Content-Type" accepted)
+                                   :body rendered-body)]
+       (assoc context :response updated-response)))})
 
 ; make this "requested" and "served" ?
 (def add-timestamp
@@ -91,7 +90,6 @@
   {:name :get-cards
    :enter
    (fn [context]
-     (prn (:request context))
      (let [read-cards (get-in context [:request :database :read-cards])
            cards (read-cards)
            response (resp/ok-simple cards)]

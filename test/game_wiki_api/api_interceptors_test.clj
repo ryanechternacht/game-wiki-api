@@ -1,8 +1,10 @@
 (ns game-wiki-api.api-interceptors-test
   (:require [clojure.test :refer :all]
             [game-wiki-api.api-interceptors :refer :all]
-            [io.pedestal.http.route :as route]))
+            [io.pedestal.http.route :as route]
+            [cheshire.core :as json]))
 
+; common interceptors
 (deftest attach-db-test
   (testing "Attach Db Test"
     (let [attach-db-fn (:enter attach-db)]
@@ -11,6 +13,31 @@
             after-context (attach-db-fn before-context)]
         (is (get-in after-context [:request :database]) "database attached")
         (is (= (:other before-context) (:other after-context)) "other value preserved")))))
+
+(deftest render-result-test
+  (testing "Render Result Test"
+    (let [render-result-fn (:leave render-result)]
+      (is render-result-fn "render-result has an enter fn")
+      (let [obj {:hello "world"}
+            base-context {:response {:body obj} :other "other"}]
+        (testing "text/html"
+          (let [before-context (assoc-in base-context [:request :accept :field] "text/html")
+                after-context (render-result-fn before-context)]
+            (is (= (:other before-context) (:other after-context)) "context is preserved")
+            (is (= obj (get-in after-context [:response :body])) "body is returned as-is")
+            (is (= "text/html" (get-in after-context [:response :headers "Content-Type"])) "Content-Type header is attached correctly")))
+        (testing "text/plain"
+          (let [before-context (assoc-in base-context [:request :accept :field] "text/plain")
+                after-context (render-result-fn before-context)]
+            (is (= obj (get-in after-context [:response :body])) "body is returned as-is")))
+        (testing "application/edn"
+          (let [before-context (assoc-in base-context [:request :accept :field] "application/edn")
+                after-context (render-result-fn before-context)]
+            (is (= (pr-str obj) (get-in after-context [:response :body])) "body is returned as edn")))
+        (testing "application/json"
+          (let [before-context (assoc-in base-context [:request :accept :field] "application/json")
+                after-context (render-result-fn before-context)]
+            (is (= (json/encode obj) (get-in after-context [:response :body])) "body is returned as-is")))))))
 
 ;; testing interceptors
 (deftest echo-test
