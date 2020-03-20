@@ -8,5 +8,6 @@
                  [io.pedestal/pedestal.route "0.5.7"]
                  [io.pedestal/pedestal.jetty "0.5.7"]
                  [org.clojure/data.json "0.2.6"]
-                 [org.slf4j/slf4j-simple "1.7.28"]]
+                 [org.slf4j/slf4j-simple "1.7.28"]
+                 [clojure.java-time "0.3.2"]]
   :repl-options {:init-ns game-wiki-api.core})

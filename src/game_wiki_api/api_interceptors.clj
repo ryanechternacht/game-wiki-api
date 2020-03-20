@@ -5,7 +5,9 @@
             [clojure.edn :as edn]
             [io.pedestal.http.route :as route]
             [io.pedestal.http.content-negotiation :as con-neg]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [cheshire.generate :refer [add-encoder encode-str remove-encoder] :as json-gen]
+            [java-time :as time]))
 
 ;; TODO "common interceptors" - conn-eg, renderer, db
 ;; common interceptors
@@ -20,6 +22,13 @@
 (def supported-types ["text/html" "application/edn" "application/json" "text/plain"])
 
 (def content-negotiation (con-neg/negotiate-content supported-types))
+
+; extends cheshire with java 8 LocalDate class
+; from https://github.com/dakrone/cheshire/issues/104
+; not sure where this should live
+(json-gen/add-encoder java.time.Instant
+                      (fn [c jsonGenerator]
+                        (.writeString jsonGenerator (.toString c))))
 
 ;; renders the results based on the accept header of the request
 (def render-result
@@ -42,7 +51,16 @@
                                      :body rendered-body)]
          (assoc context :response updated-response))))})
 
-(def common [content-negotiation render-result attach-db])
+; make this "requested" and "served" ?
+(def add-timestamp
+  {:name :add-timestamp
+   :leave
+   (fn [context]
+     (let [body (get-in context [:response :body])]
+       (assoc-in context [:response :body]
+                 (assoc body :generated_on (time/instant)))))})
+
+(def common [content-negotiation render-result add-timestamp attach-db])
 
 ;; testing interceptors
 (def print-request
