@@ -19,7 +19,7 @@
       (is echo-fn "echo interceptor has an enter fn")
       (let [before-context {:test "test-val"}
             after-context (echo-fn before-context)]
-        (is (= before-context (get-in after-context [:response :body])) "echo context as response")
+        (is (= before-context (get-in after-context [:response :body :data])) "echo context as response")
         (is (= (:test before-context) (:test after-context)) "context preserved")))))
 
 (deftest echo-json-body-test
@@ -29,7 +29,7 @@
       (let [before-context {:other "other-val"
                             :request {:json-params {:param-1 1 :param-2 2 :param-c "c"}}}
             after-context (echo-json-body-fn before-context)]
-        (is (= (get-in [:request :json-params] before-context) (get-in [:response :body] after-context)) "json was returned as body")
+        (is (= (get-in [:request :json-params] before-context) (get-in [:response :body :data] after-context)) "json was returned as body")
         (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 ;; card interceptors
@@ -41,7 +41,7 @@
             db-map {:read-cards (fn [] cards)}
             before-context {:request {:database db-map} :other-val "other-val"}
             after-context (get-cards-fn before-context)]
-        (is (= cards (get-in after-context [:response :body])) "cards is body")
+        (is (= cards (get-in after-context [:response :body :data])) "cards is body")
         (is (= (:other-val before-context) (:other-val after-context)) "context is preserved")))))
 
 (deftest get-card-test
@@ -56,14 +56,14 @@
                                         :path-params {:card-id (str card-id)}}
                               :other "other-val"}
               after-context (get-card-fn before-context)]
-          (is (= card (get-in after-context [:response :body])) "card is returned as body")
+          (is (= card (get-in after-context [:response :body :data])) "card is returned as body")
           (is (= (:other before-context) (:other after-context)) "context is preserved")))
       (testing "Card Not Found"
         (let [before-context {:request {:database db-map
                                         :path-params {:card-id (str (inc card-id))}}
                               :other "other-val"}
               after-context (get-card-fn before-context)]
-          (is (= nil (get-in after-context [:response :body])) "not body si returned")
+          (is (= nil (get-in after-context [:response :body :data])) "not body si returned")
           (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
 
 ; requires rebinding io.pedestal.http.route/*url-for*
@@ -79,7 +79,7 @@
                                         :database db-map}}
               after-context (post-card-fn before-context)]
           (is (= (:other before-context) (:other after-context)) "context is preserved")
-          (is (= (:name card-data) (get-in after-context [:response :body :name])) "body has the new card"))))))
+          (is (= (:name card-data) (get-in after-context [:response :body :data :name])) "body has the new card"))))))
 
 (deftest put-card-test
   (testing "Put Card Test"
@@ -91,7 +91,7 @@
                             :request {:json-params card-data
                                       :database db-map}}
             after-context (put-card-fn before-context)]
-        (is (= card-data (get-in after-context [:response :body])) "body is the updated card")
+        (is (= card-data (get-in after-context [:response :body :data])) "body is the updated card")
         (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 ;; faq interceptors
@@ -107,14 +107,14 @@
                                         :path-params {:faq-id (str faq-id)}}
                               :other "other-val"}
               after-context (get-faq-fn before-context)]
-          (is (= faq (get-in after-context [:response :body] "faq is returned as body")))
+          (is (= faq (get-in after-context [:response :body :data] "faq is returned as body")))
           (is (= (:other before-context) (:other after-context)) "context is preserved")))
       (testing "Faq Not Found"
         (let [before-context {:request {:database db-map
                                         :path-params {:faq-id (str (inc faq-id))}}
                               :other "other-val"}
               after-context (get-faq-fn before-context)]
-          (is (= nil (get-in after-context [:response :body])) "no body is returned")
+          (is (= nil (get-in after-context [:response :body :data])) "no body is returned")
           (is (= (:other before-context) (:other after-context)) "context is preserved"))))))
 
 (deftest get-faqs-simple-test
@@ -126,7 +126,7 @@
             before-context {:request {:database db-map}
                             :other "other-val"}
             after-context (get-faqs-simple-fn before-context)]
-        (is (= faqs (get-in after-context [:response :body])) "faqs are returned as body")
+        (is (= faqs (get-in after-context [:response :body :data])) "faqs are returned as body")
         (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 (deftest search-faqs-test
@@ -140,7 +140,7 @@
                                       :path-params {:faq-search "search"}}
                             :other "other"}
             after-context (search-faqs-fn before-context)]
-        (is (= faqs (get-in after-context [:response :body] "faqs are returned")))
+        (is (= faqs (get-in after-context [:response :body :data] "faqs are returned")))
         (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 (deftest get-popular-faq-tags-test
@@ -152,7 +152,7 @@
             before-context {:request {:database db-map}
                             :other "other"}
             after-context (get-popular-faq-tags-fn before-context)]
-        (is (= tags (get-in after-context [:response :body])) "tags are returned")
+        (is (= tags (get-in after-context [:response :body :data])) "tags are returned")
         (is (= (:other before-context) (:other after-context)) "context is preserved")))))
 
 ; requires rebinding io.pedestal.http.route/*url-for*
@@ -168,7 +168,7 @@
                                         :database db-map}}
               after-context (post-faq-fn before-context)]
           (is (= (:other before-context) (:other after-context)) "context is preserved")
-          (is (= faq-data (dissoc (get-in after-context [:response :body]) :id)) "body has the new faq"))))))
+          (is (= faq-data (dissoc (get-in after-context [:response :body :data]) :id)) "body has the new faq"))))))
 
 (deftest put-faq-test
   (testing "Put Faq Test"
@@ -181,4 +181,4 @@
                                       :database db-map}}
             after-context (put-faq-fn before-context)]
         (is (= (:other before-context) (:other after-context)) "context is preserved")
-        (is (= faq-data (get-in after-context [:response :body])) "body has the new faq")))))
+        (is (= faq-data (get-in after-context [:response :body :data])) "body has the new faq")))))
