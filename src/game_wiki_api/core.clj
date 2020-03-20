@@ -30,8 +30,7 @@
   {::http/routes routes
    ::http/type :jetty
    ::http/port 8890
-   ;; I can't get general purpose cors working for some reason
-   ::http/allowed-origins ["http://localhost:8080"]})
+   ::http/allowed-origins (fn [_] true)})
 
 (defonce server (atom nil))
 
