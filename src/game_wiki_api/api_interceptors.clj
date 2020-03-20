@@ -58,7 +58,7 @@
    (fn [context]
      (let [body (get-in context [:response :body])]
        (assoc-in context [:response :body]
-                 (assoc body :generated_on (time/instant)))))})
+                 (assoc body :generated-at (time/instant)))))})
 
 (def common [content-negotiation render-result add-timestamp attach-db])
 
