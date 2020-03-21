@@ -27,7 +27,7 @@
   "SELECT c.terraforming_mars_id, c.name, c.cost, 
           ct.name as tag_name, ct.value as tag_value
    FROM card c
-   JOIN card_tag ct on c.id = ct.card_id")
+   LEFT JOIN card_tag ct on c.id = ct.card_id")
 
 (defn read-cards [db]
   (fn []
@@ -40,7 +40,7 @@
   (format "SELECT c.terraforming_mars_id, c.name, c.cost,
                   ct.name as tag_name, ct.value as tag_value
            FROM card c
-           JOIN card_tag ct on c.id = ct.card_id
+           LEFT JOIN card_tag ct on c.id = ct.card_id
            WHERE c.terraforming_mars_id = %s", id))
 
 (defn read-card-by-id [db]
@@ -48,16 +48,23 @@
     (->> (sql/query db [(read-card-by-id-query id)])
          (map-rows-to-card))))
 
+(def read-faqs-simple-query
+  "SELECT id, title FROM frequently_asked_question")
+
+(defn read-faqs-simple [db]
+  (fn []
+    (sql/query db [read-faqs-simple-query])))
+
 (defn get-db-map
-  "Takes an atom representing an in memory database. 
-   If none is supplied uses the default db atom"
+  "Takes a connection obj for a mysql db.
+   If none is supplied uses the default db connection"
   ([] (get-db-map db-conn))
   ([db]
    {:read-cards (read-cards db)
     :read-card-by-id (read-card-by-id db)
     ;; :create-card! (create-card! db)
     ;; :update-card! (update-card! db)
-    ;; :read-faqs-simple (read-faqs-simple db)
+    :read-faqs-simple (read-faqs-simple db)
     ;; :read-faq-by-id (read-faq-by-id db)
     ;; :search-faqs (search-faqs db)
     ;; :get-popular-faq-tags (get-popular-faq-tags db)
