@@ -55,6 +55,18 @@
   (fn []
     (sql/query db [read-faqs-simple-query])))
 
+(def get-popular-faq-tags-query
+  "SELECT tag FROM frequently_asked_question_tag
+   GROUP BY tag
+   HAVING count(*) >= 2
+   ORDER BY count(*) desc
+   LIMIT 4")
+
+(defn get-popular-faq-tags [db]
+  (fn []
+    (->> (sql/query db [get-popular-faq-tags-query])
+         (map :tag))))
+
 (defn get-db-map
   "Takes a connection obj for a mysql db.
    If none is supplied uses the default db connection"
@@ -67,7 +79,7 @@
     :read-faqs-simple (read-faqs-simple db)
     ;; :read-faq-by-id (read-faq-by-id db)
     ;; :search-faqs (search-faqs db)
-    ;; :get-popular-faq-tags (get-popular-faq-tags db)
+    :get-popular-faq-tags (get-popular-faq-tags db)
     ;; :update-faq! (update-faq! db)
     ;; :create-faq! (create-faq! db)
     }))
