@@ -1,13 +1,15 @@
 (ns game-wiki-api.api-interceptors
-  (:require [game-wiki-api.database.in-memory-database :as db]
-            [game-wiki-api.http-responses :as resp]
-            [game-wiki-api.domain :as domain]
-            [clojure.edn :as edn]
-            [io.pedestal.http.route :as route]
-            [io.pedestal.http.content-negotiation :as con-neg]
-            [cheshire.core :as json]
-            [cheshire.generate :refer [add-encoder encode-str remove-encoder] :as json-gen]
-            [java-time :as time]))
+  (:require
+   ;[game-wiki-api.database.in-memory-database :as db]
+   [game-wiki-api.database.mysql-database :as db]
+   [game-wiki-api.http-responses :as resp]
+   [game-wiki-api.domain :as domain]
+   [clojure.edn :as edn]
+   [io.pedestal.http.route :as route]
+   [io.pedestal.http.content-negotiation :as con-neg]
+   [cheshire.core :as json]
+   [cheshire.generate :refer [add-encoder encode-str remove-encoder] :as json-gen]
+   [java-time :as time]))
 
 ;; common interceptors
 (def db-map (db/get-db-map))

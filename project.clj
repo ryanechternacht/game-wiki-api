@@ -9,5 +9,7 @@
                  [io.pedestal/pedestal.jetty "0.5.7"]
                  [org.clojure/data.json "0.2.6"]
                  [org.slf4j/slf4j-simple "1.7.28"]
-                 [clojure.java-time "0.3.2"]]
+                 [clojure.java-time "0.3.2"]
+                 [org.clojure/java.jdbc "0.4.2"]
+                 [mysql/mysql-connector-java "5.1.38"]]
   :repl-options {:init-ns game-wiki-api.core})
