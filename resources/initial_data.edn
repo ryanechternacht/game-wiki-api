@@ -33,7 +33,7 @@
                    {:name "action" :value "true"}
                    {:name "type" :value "active"}]
             :cost 9}
-         7 {:name "martial rails"
+         7 {:name "martian rails"
             :id 7
             :tags [{:name "building tag" :value "building"}
                    {:name "action" :value "true"}
