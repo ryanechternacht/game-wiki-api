@@ -36,16 +36,16 @@
          vals
          (map map-rows-to-card))))
 
-(defn read-card-by-id-query [id]
-  (format "SELECT c.terraforming_mars_id, c.name, c.cost,
-                  ct.name as tag_name, ct.value as tag_value
-           FROM card c
-           LEFT JOIN card_tag ct on c.id = ct.card_id
-           WHERE c.terraforming_mars_id = %s", id))
+(def read-card-by-id-query
+  "SELECT c.terraforming_mars_id, c.name, c.cost,
+          ct.name as tag_name, ct.value as tag_value
+   FROM card c
+   LEFT JOIN card_tag ct on c.id = ct.card_id
+   WHERE c.terraforming_mars_id = ?")
 
 (defn read-card-by-id [db]
   (fn [id]
-    (->> (sql/query db [(read-card-by-id-query id)])
+    (->> (sql/query db [read-card-by-id-query id])
          (map-rows-to-card))))
 
 (def read-faqs-simple-query
@@ -67,6 +67,40 @@
     (->> (sql/query db [get-popular-faq-tags-query])
          (map :tag))))
 
+(defn map-rows-to-faq [rows]
+  (let [faq (first rows)]
+    {:id (:id faq)
+     :title (:title faq)
+     :body (:body faq)
+     :tags (vec (map :tag rows))}))
+
+;; rewrite using group-concat?
+(def read-faq-by-id-query
+  "SELECT f.id, f.title, f.body, t.tag
+   FROM frequently_asked_question f
+   LEFT JOIN frequently_asked_question_tag t
+   ON f.id = t.frequently_asked_question_id
+   WHERE f.id = ?")
+
+(defn read-faq-by-id [db]
+  (fn [id]
+    (->> (sql/query db [read-faq-by-id-query id])
+         (map-rows-to-faq))))
+
+(defn search-faqs-query [term]
+  (format "SELECT f.id, f.title
+           FROM frequently_asked_question f
+           LEFT JOIN frequently_asked_question_tag t
+           ON f.id = t.frequently_asked_question_id
+           WHERE f.title LIKE '%1$s%%'
+               OR f.body LIKE '%1$s%%'
+               OR t.tag LIKE '%1$s%%'"
+          term))
+
+(defn search-faqs [db]
+  (fn [term]
+    (sql/query db [(search-faqs-query term)])))
+
 (defn get-db-map
   "Takes a connection obj for a mysql db.
    If none is supplied uses the default db connection"
@@ -77,8 +111,8 @@
     ;; :create-card! (create-card! db)
     ;; :update-card! (update-card! db)
     :read-faqs-simple (read-faqs-simple db)
-    ;; :read-faq-by-id (read-faq-by-id db)
-    ;; :search-faqs (search-faqs db)
+    :read-faq-by-id (read-faq-by-id db)
+    :search-faqs (search-faqs db)
     :get-popular-faq-tags (get-popular-faq-tags db)
     ;; :update-faq! (update-faq! db)
     ;; :create-faq! (create-faq! db)
