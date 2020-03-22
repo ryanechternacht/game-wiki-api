@@ -11,8 +11,7 @@
               ; removes a warning
               :useSSL false})
 
-;; (sql/query db-conn ["SELECT * FROM person"])
-
+;; card calls
 (defn map-rows-to-card [rows]
   (let [card (first rows)]
     {:id (:terraforming_mars_id card)
@@ -48,6 +47,7 @@
     (->> (sql/query db [read-card-by-id-query id])
          (map-rows-to-card))))
 
+;; FAQ calls
 (def read-faqs-simple-query
   "SELECT id, title FROM frequently_asked_question")
 
@@ -101,6 +101,31 @@
   (fn [term]
     (sql/query db [(search-faqs-query term)])))
 
+(defn update-faq! [db]
+  (fn [faq]
+    (do
+      (let [id (:id faq)]
+        (sql/update! db :frequently_asked_question
+                     (select-keys faq [:title :body])
+                     ["id = ?" id])
+        (sql/delete! db :frequently_asked_question_tag
+                     ["frequently_asked_question_id = ?" id])
+        (sql/insert-multi! db :frequently_asked_question_tag
+                           [:frequently_asked_question_id :tag]
+                           (vec (map (fn [tag] [id tag]) (:tags faq)))))
+      faq)))
+
+(defn create-faq! [db]
+  (fn [faq]
+    (do
+      (let [result (sql/insert! db :frequently_asked_question
+                                (select-keys faq [:title :body]))
+            id (:generated_key (first result))]
+        (sql/insert-multi! db :frequently_asked_question_tag
+                           [:frequently_asked_question_id :tag]
+                           (vec (map (fn [tag] [id tag]) (:tags faq))))
+        (assoc faq :id id)))))
+
 (defn get-db-map
   "Takes a connection obj for a mysql db.
    If none is supplied uses the default db connection"
@@ -114,6 +139,5 @@
     :read-faq-by-id (read-faq-by-id db)
     :search-faqs (search-faqs db)
     :get-popular-faq-tags (get-popular-faq-tags db)
-    ;; :update-faq! (update-faq! db)
-    ;; :create-faq! (create-faq! db)
-    }))
+    :update-faq! (update-faq! db)
+    :create-faq! (create-faq! db)}))
